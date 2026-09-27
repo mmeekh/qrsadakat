@@ -146,6 +146,9 @@ def static_files() -> dict[str, tuple[bytes, str, str]]:
         etag = '"' + hashlib.sha256(body).hexdigest()[:20] + '"'
         files[path] = (body, MIME[pathlib.PurePath(path).suffix], etag)
     files["/"] = files["/index.html"]
+    # Content pages also answer without the extension: /gizlilik serves gizlilik.html.
+    for path in [p for p in files if p.endswith(".html") and p not in ("/index.html", "/404.html")]:
+        files[path[:-5]] = files[path]
     return files
 
 

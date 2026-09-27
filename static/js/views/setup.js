@@ -1,6 +1,6 @@
 // Business profile: name, category and the pin on the map. Rewards are cards (program.js).
 import { api, signIn } from "../api.js";
-import { baseMap, loadLeaflet, locate, pinIcon } from "../map-kit.js";
+import { baseMap, loadLeaflet, locate, locateControl, pinIcon } from "../map-kit.js";
 import { defineView, go } from "../nav.js";
 import { refreshMe, state } from "../state.js";
 import { $, h, toast } from "../ui.js";
@@ -16,6 +16,18 @@ defineView("setup", {
     if (!state.me.user) return signIn("merchant").catch((error) => toast(error.message));
     const merchant = state.me.merchant;
     $("setup-title").textContent = merchant ? "İşletme bilgileri" : "İşletmeni ekle";
+    // Businesses open by invitation; an uninvited account learns which e-mail to pass on.
+    const blocked = !merchant && !state.me.can_open_business;
+    form.classList.toggle("hidden", blocked);
+    $("setup-blocked").classList.toggle("hidden", !blocked);
+    if (blocked) {
+      $("setup-blocked").replaceChildren(
+        h("h2", {}, "İşletme hesapları davetle açılıyor"),
+        h("p", { class: "empty-state" }, `Bu Google hesabı (${state.me.user.email}) henüz işletme olarak eklenmedi. `,
+          "İşletmeni bikıyak'a eklemek için bu e-postayı bikıyak ekibine ilet; eklenince bu sayfadan devam edersin."),
+        h("button", { class: "button secondary", type: "button", onclick: () => go("map") }, "Haritaya dön"));
+      return;
+    }
     form.category.replaceChildren(...state.config.categories.map((name) => h("option", { value: name }, name)));
     for (const field of ["business_name", "category", "address", "lat", "lng"]) {
       form[field].value = merchant?.[field] ?? (field === "category" ? "Kafe" : "");
@@ -26,6 +38,10 @@ defineView("setup", {
     if (!map) {
       map = baseMap(L, $("setup-map"));
       map.on("click", (event) => setPin(event.latlng.lat, event.latlng.lng));
+      locateControl(L, map, async () => {
+        try { const [lat, lng] = await locate(); setPin(lat, lng); map.setView([lat, lng], 17); }
+        catch (error) { toast(error.message); }
+      });
     }
     if (pin) { pin.remove(); pin = null; }
     if (merchant?.lat != null) { setPin(merchant.lat, merchant.lng); map.setView([merchant.lat, merchant.lng], 16); }
@@ -56,10 +72,7 @@ $("geocode-button").addEventListener("click", async () => {
   } catch (error) { toast(error.message); }
 });
 
-$("setup-locate").addEventListener("click", async () => {
-  try { const [lat, lng] = await locate(); setPin(lat, lng); map.setView([lat, lng], 17); }
-  catch (error) { toast(error.message); }
-});
+
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();

@@ -158,6 +158,7 @@ footer{display:none}
 .empty-block{grid-column:1/-1;display:flex;flex-direction:column;gap:14px;max-width:440px;background:var(--surface);border-radius:var(--radius-l);
   padding:22px;box-shadow:var(--shadow-1)}
 .empty-state{color:var(--ink-2);font-size:14px}
+.empty-block h2{font-size:20px}
 .save-banner{grid-column:1/-1;background:var(--accent-soft);border:1px solid #F5DD8C;border-radius:var(--radius);padding:16px;
   display:flex;flex-direction:column;gap:12px}
 .save-banner p{font-weight:700;line-height:1.5}
@@ -305,3 +306,29 @@ footer{display:none}
 .not-found-pass h1{font-size:28px;font-weight:800;margin-top:22px}
 .not-found-pass p{margin-top:8px;opacity:.92;font-weight:500}
 .not-found-actions{display:flex;flex-direction:column;gap:10px;width:100%;max-width:440px}
+
+/* Map "my location" button, bottom right on the map (Google Maps style) */
+.locate-control{width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:var(--primary);display:grid;place-items:center;
+  box-shadow:0 2px 6px rgba(11,20,51,.3);cursor:pointer;margin:0 12px 16px 0}
+.locate-control svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.locate-control svg circle:first-child{fill:currentColor;stroke:none}
+.locate-control:hover{background:var(--surface-2)}
+.locate-control.locating svg{animation:locatePulse 1s ease-in-out infinite}
+@keyframes locatePulse{50%{opacity:.35}}
+
+/* Legal pages (gizlilik) */
+.legal-shell{padding-bottom:48px}
+.legal{max-width:760px;display:flex;flex-direction:column;gap:12px;padding-top:24px}
+.legal h1{font-size:clamp(28px,6vw,38px);font-weight:800}
+.legal h2{font-size:20px;margin-top:18px}
+.legal h3{font-size:16px;margin-top:6px}
+.legal p,.legal li{color:var(--ink-2);font-size:15px;line-height:1.65}
+.legal ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.legal b{color:var(--ink)}
+.legal-date{font-size:13px!important}
+.legal-table{overflow-x:auto;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-1)}
+.legal table{width:100%;border-collapse:collapse;font-size:14px}
+.legal th,.legal td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+.legal th{font-weight:700;color:var(--ink)}
+.legal tr:last-child td{border-bottom:0}
+.legal code{font-size:13px}

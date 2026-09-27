@@ -14,6 +14,8 @@ PORT = int(os.environ.get("BIKIYAK_PORT", "8088"))
 # Google compares redirect_uri byte for byte, so production pins the public origin.
 PUBLIC_URL = os.environ.get("BIKIYAK_PUBLIC_URL", "").rstrip("/")
 DEMO_MODE = os.environ.get("BIKIYAK_DEMO_MODE", "0") == "1"
+# Off: only e-mails in merchant_invites can open a business (python -m bikiyak.admin invite ...).
+OPEN_SIGNUP = os.environ.get("BIKIYAK_OPEN_SIGNUP", "0") == "1"
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "").strip()
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "").strip()

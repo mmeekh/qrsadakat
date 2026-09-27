@@ -20,8 +20,13 @@ export function loadLeaflet() {
   return loading;
 }
 
+// Without the visitor's location the map opens at city scale on Istanbul, not the whole country.
+export const DEFAULT_VIEW = { center: [41.0082, 28.9784], zoom: 11 };
+const LOCATE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/>' +
+  '<path d="M12 2v3m0 14v3M2 12h3m14 0h3"/><circle cx="12" cy="12" r="8"/></svg>';
+
 export function baseMap(L, element) {
-  const map = L.map(element, { zoomControl: true }).setView([39.0, 35.0], 6);
+  const map = L.map(element, { zoomControl: true }).setView(DEFAULT_VIEW.center, DEFAULT_VIEW.zoom);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -34,6 +39,33 @@ export function pinIcon(L, category) {
   // Classes, not inline styles: the page's CSP forbids style attributes.
   return L.divIcon({ className: `map-pin pin-${theme.slug}`, html: `<span><i>${theme.icon}</i></span>`,
     iconSize: [42, 42], iconAnchor: [21, 40], popupAnchor: [0, -36] });
+}
+
+// A round "my location" button on the map itself, bottom right, as in Google Maps.
+export function locateControl(L, map, onClick) {
+  const Control = L.Control.extend({
+    options: { position: "bottomright" },
+    onAdd() {
+      const button = L.DomUtil.create("button", "locate-control");
+      button.type = "button";
+      button.title = "Konumumu göster";
+      button.setAttribute("aria-label", "Konumumu göster");
+      button.innerHTML = LOCATE_ICON;
+      L.DomEvent.disableClickPropagation(button);
+      L.DomEvent.on(button, "click", async (event) => {
+        L.DomEvent.preventDefault(event);
+        button.classList.add("locating");
+        try { await onClick(); } finally { button.classList.remove("locating"); }
+      });
+      return button;
+    },
+  });
+  return new Control().addTo(map);
+}
+
+export function hereDot(L, map, latlng, existing) {
+  if (existing) return existing.setLatLng(latlng);
+  return L.circleMarker(latlng, { radius: 8, color: "#fff", weight: 3, fillColor: "#2447F5", fillOpacity: 1 }).addTo(map);
 }
 
 export function locate() {

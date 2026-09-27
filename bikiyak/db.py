@@ -148,7 +148,15 @@ def m004_reward_cards(db: sqlite3.Connection) -> None:
     add_columns(db, "oauth_states", (("program_id", "INTEGER"),))
 
 
-MIGRATIONS = (m001_pilot, m002_google_accounts_and_places, m003_reward_types, m004_reward_cards)
+def m005_merchant_invites(db: sqlite3.Connection) -> None:
+    """Businesses open by invitation: only e-mails the operator adds can create a business.
+    Customers still sign in freely."""
+    run(db, """CREATE TABLE merchant_invites (
+      email TEXT PRIMARY KEY, note TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL)""")
+
+
+MIGRATIONS = (m001_pilot, m002_google_accounts_and_places, m003_reward_types, m004_reward_cards,
+              m005_merchant_invites)
 
 
 def migrate() -> None:

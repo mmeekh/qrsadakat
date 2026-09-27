@@ -1,6 +1,6 @@
 // Every business that takes bikıyak stamps, on a map and as a list sorted by distance.
 import { api } from "../api.js";
-import { baseMap, directionsUrl, distanceKm, loadLeaflet, locate, pinIcon } from "../map-kit.js";
+import { baseMap, DEFAULT_VIEW, directionsUrl, distanceKm, hereDot, loadLeaflet, locate, locateControl, pinIcon } from "../map-kit.js";
 import { defineView, go } from "../nav.js";
 import { themeFor } from "../qr-themes.js";
 import { $, h, toast } from "../ui.js";
@@ -11,6 +11,7 @@ let layer = null;
 let places = [];
 let here = null;
 let hereMarker = null;
+let askedForLocation = false;
 
 defineView("map", {
   async render() {
@@ -21,16 +22,22 @@ defineView("map", {
     if (!map) {
       map = baseMap(L, $("map-canvas"));
       layer = L.layerGroup().addTo(map);
+      locateControl(L, map, () => findMe(true));
     }
     layer.clearLayers();
     for (const place of places) {
       L.marker([place.lat, place.lng], { icon: pinIcon(L, place.category), title: place.business_name })
         .bindPopup(() => placeCard(place, true)).addTo(layer);
     }
-    if (here) map.setView(here, 14);
-    else if (places.length) map.fitBounds(L.latLngBounds(places.map((p) => [p.lat, p.lng])).pad(0.3), { maxZoom: 15 });
+    if (here) map.setView(here, 15);
+    else map.setView(DEFAULT_VIEW.center, DEFAULT_VIEW.zoom);
     setTimeout(() => map.invalidateSize(), 0);
     renderList();
+    // First visit: ask once for the location so the map opens around the visitor.
+    if (!here && !askedForLocation) {
+      askedForLocation = true;
+      findMe(false);
+    }
   },
 });
 
@@ -61,12 +68,14 @@ function renderList() {
     : [h("p", { class: "empty-state" }, "Henüz haritada işletme yok.")]));
 }
 
-$("locate-button").addEventListener("click", async () => {
+async function findMe(userAsked) {
   try {
     here = await locate();
-    if (hereMarker) hereMarker.setLatLng(here);
-    else hereMarker = L.circleMarker(here, { radius: 8, color: "#fff", weight: 3, fillColor: "#2f6fd6", fillOpacity: 1 }).addTo(map);
-    map.setView(here, 14);
+    hereMarker = hereDot(L, map, here, hereMarker);
+    map.setView(here, 15);
     renderList();
-  } catch (error) { toast(error.message); }
-});
+  } catch (error) {
+    // Only a tap on the button deserves an error; the automatic first try stays quiet.
+    if (userAsked) toast(error.message);
+  }
+}

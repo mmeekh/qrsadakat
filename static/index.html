@@ -61,12 +61,13 @@
 
       <section id="setup-view" class="view hidden">
         <div class="page-head"><div><span class="eyebrow">İşletme</span><h1 id="setup-title">İşletmeni ekle</h1><p>Müşterilerin seni haritada bu bilgilerle görür.</p></div></div>
+        <div id="setup-blocked" class="empty-block hidden"></div>
         <form id="setup-form" class="panel setup-form">
           <label>İşletme adı<input name="business_name" maxlength="80" required placeholder="Örn. Nora Café"></label>
           <label>Kategori<select name="category" required></select></label>
           <label>Adres<span class="input-row"><input name="address" maxlength="160" required placeholder="Mahalle, sokak, ilçe"><button id="geocode-button" class="button secondary small" type="button">Haritada bul</button></span></label>
           <div id="geocode-results" class="geocode-results"></div>
-          <div class="map-tools"><span id="pin-status" class="muted"></span><button id="setup-locate" class="text-button" type="button">Konumumu kullan</button></div>
+          <div class="map-tools"><span id="pin-status" class="muted"></span></div>
           <div id="setup-map" class="setup-map"></div>
           <input name="lat" type="hidden"><input name="lng" type="hidden">
           <button id="setup-submit" class="button primary full" type="submit">İşletmemi oluştur <span>→</span></button>
@@ -144,7 +145,7 @@
       </section>
 
       <section id="map-view" class="view hidden">
-        <div class="page-head"><div><span class="eyebrow">Harita</span><h1>Damga toplayabileceğin yerler</h1></div><button id="locate-button" class="button secondary small" type="button">Konumumu göster</button></div>
+        <div class="page-head"><div><span class="eyebrow">Harita</span><h1>Damga toplayabileceğin yerler</h1></div></div>
         <div id="map-canvas" class="map-canvas"></div>
         <div id="place-list" class="place-list"></div>
       </section>

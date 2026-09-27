@@ -53,11 +53,11 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 class ServerTest(unittest.TestCase):
     def setUp(self):
         self.saved = {name: getattr(config, name) for name in
-                      ("DB_PATH", "DEMO_MODE", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "PUBLIC_URL")}
+                      ("DB_PATH", "DEMO_MODE", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "PUBLIC_URL", "OPEN_SIGNUP")}
         self.saved_token_url = auth.GOOGLE_TOKEN_URL
         self.temp = tempfile.TemporaryDirectory()
         config.DB_PATH = Path(self.temp.name) / "test.sqlite3"
-        config.DEMO_MODE, config.PUBLIC_URL = False, ""
+        config.DEMO_MODE, config.PUBLIC_URL, config.OPEN_SIGNUP = False, "", False
         config.GOOGLE_CLIENT_ID, config.GOOGLE_CLIENT_SECRET = "test-client", "test-secret"
         self.google = FakeGoogle()
         auth.GOOGLE_TOKEN_URL = self.google.url
@@ -120,10 +120,14 @@ class ServerTest(unittest.TestCase):
 
     def open_business(self, client, sub, name="Nora Café", required=2):
         """Signs in, opens a business and its first card; returns the card (program)."""
+        self.invite(f"{sub}@example.com")
         self.login(client, sub, intent="merchant")
         self.call(client, "/api/merchant", {"business_name": name, "category": "Kafe", "address": "Moda, Kadıköy",
                                             "lat": 40.98, "lng": 29.02})
         return self.new_card(client, required)
+
+    def invite(self, email):
+        self.sql("INSERT OR IGNORE INTO merchant_invites(email,created_at) VALUES(?,'2026-09-27')", (email.lower(),))
 
     def new_card(self, client, required=2, expected=200, **reward):
         body = {"reward_type": "free", "reward_item": "1 kahve", "stamps_required": required, **reward}

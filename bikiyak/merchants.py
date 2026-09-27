@@ -33,6 +33,12 @@ def require_merchant(req: Request) -> sqlite3.Row:
     return row
 
 
+def may_open_business(db: sqlite3.Connection, user: sqlite3.Row) -> bool:
+    if config.OPEN_SIGNUP or merchant_of(db, user["id"]):
+        return True
+    return db.execute("SELECT 1 FROM merchant_invites WHERE email=?", (user["email"].lower(),)).fetchone() is not None
+
+
 def clean(value: object, limit: int) -> str:
     return " ".join(str(value or "").split())[:limit]
 
@@ -64,6 +70,8 @@ def save_profile(req: Request) -> dict:
               address=:address, lat=:lat, lng=:lng WHERE id=:id""", {**profile, "id": existing["id"]})
             merchant_id = existing["id"]
         else:
+            if not may_open_business(db, user):
+                raise ApiError(403, f"Bu Google hesabı ({user['email']}) henüz işletme olarak eklenmedi.")
             # Password-era columns: email must stay UNIQUE (the account id keeps it so), and the
             # unused reward_title/stamps_required get neutral values; rewards are programs now.
             merchant_id = db.execute("""INSERT INTO merchants(name,email,password_hash,business_name,slug,

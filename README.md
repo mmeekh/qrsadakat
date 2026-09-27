@@ -12,8 +12,16 @@ Claude'a devredildi; aynı gün önce "Cheabby", sonra **bikıyak** adını ald�
 
 ## Akış
 
-1. İşletme sahibi Google ile girer; işletme adı, kategori ve haritadaki yerini (adres
-   araması, "konumumu kullan" veya haritaya dokunma) girer, ardından ilk **kartını** açar.
+1. **İşletme hesapları davetle açılır.** İşletmecinin e-postasını operatör ekler, sonra işletmeci
+   Google ile girer ve işletme adı, kategori ve haritadaki yerini girer (adres araması, haritadaki
+   konum düğmesi ya da haritaya dokunarak). Ardından ilk **kartını** açar. Davetsiz bir hesap,
+   hangi e-postanın eklenmesi gerektiğini söyleyen bir mesaj görür. Müşteriler davetsiz girer.
+   ```bash
+   docker exec qrsadakat-app python -m bikiyak.admin invite isletme@gmail.com "Nora Café"
+   docker exec qrsadakat-app python -m bikiyak.admin invites     # kim açtı, kim açmadı
+   docker exec qrsadakat-app python -m bikiyak.admin uninvite isletme@gmail.com
+   ```
+   `BIKIYAK_OPEN_SIGNUP=1` daveti kapatır (herkes işletme açabilir).
 2. **Kartlar (programlar):** bir işletme en fazla **5 aktif** kart çalıştırır (ör. kahve
    kartı + tatlı kartı). Her kartın damga hedefi (2–20, sonradan değişmez) ve ödülü var:
    **bedava ürün** ("6 damga topla, 1 kahve bedava"), **yüzde indirim** (%5–100),
@@ -37,7 +45,8 @@ Claude'a devredildi; aynı gün önce "Cheabby", sonra **bikıyak** adını ald�
      misafir kartı kaybolur; ödülün girişe bağlı olmasının nedeni bu.
 5. Hedef dolunca müşteri "Ödülümü kullan" der, işletme panelde teslimi onaylar
    (panel hangi kartın ödülü olduğunu, "Verilecek: …" diye yazar).
-6. **Harita** bütün işletmeleri, her birinin aktif kartlarını, müşterinin her karttaki
+6. **Harita** ilk açılışta bir kez konum ister ve kullanıcının çevresinde açılır (izin yoksa
+   İstanbul, şehir ölçeği). Sağ alttaki yuvarlak düğme konuma döner. Harita bütün işletmeleri, her birinin aktif kartlarını, müşterinin her karttaki
    damga durumunu ve Google Haritalar yol tarifi bağlantısını gösterir.
 
 Alt sekme çubuğu: işletme için Kartlarım · Panel · Harita · Hesap (işletme sahibinin kendi
@@ -161,6 +170,15 @@ docker compose -f deploy/compose.yml up -d app
 adresi `https://xn--bikyak-r9a.com/auth/google/callback` olmalı.
 
 Öneri: `bikiyak.com` (i ile) da alınıp buraya yönlendirilsin.
+
+## Gizlilik sayfası
+
+`docs/gizlilik-taslak.html` KVKK aydınlatma metni taslağıdır. Sistemin gerçekte işlediği veriler,
+3 çerez, aktarımlar (Google, Cloudflare, Hetzner/Almanya, OpenStreetMap/Nominatim) ve Google
+"Limited Use" beyanı yazılıdır. `[[...]]` alanları (veri sorumlusu, iletişim e-postası) doldurulunca
+`static/gizlilik.html` olarak yayına alınır; `/gizlilik` adresinden açılır (uzantısız adres desteği
+`web.static_files`'ta). Ana sayfaya bağlantısı ve Google marka doğrulamasındaki "Privacy policy"
+adresi de o zaman eklenir. Hukukçuya okutulması önerilir.
 
 ## Tema ve marka
 

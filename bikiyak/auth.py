@@ -20,7 +20,7 @@ from .accounts import (adopt_guest, current_user, customer_for_user, customer_of
                        start_session, upsert_user)
 from .db import write
 from .loyalty import apply_stamp, card_for, cards_of, valid_scan_token
-from .merchants import merchant_of, public_merchant
+from .merchants import may_open_business, merchant_of, public_merchant
 from .programs import program_by_id
 from .web import ApiError, Request, Response, Router
 
@@ -161,4 +161,5 @@ def me(req: Request) -> dict:
         # A guest sees their one card, with a prompt to save it to a Google account.
         return {"user": None, "merchant": None, "cards": cards}
     merchant = merchant_of(req.db, user["id"])
-    return {"user": public_user(user), "merchant": public_merchant(merchant) if merchant else None, "cards": cards}
+    return {"user": public_user(user), "merchant": public_merchant(merchant) if merchant else None, "cards": cards,
+            "can_open_business": may_open_business(req.db, user)}
