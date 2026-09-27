@@ -110,11 +110,11 @@ girilince hesaba taşınır.
 
 ## Canlı ortam
 
-`https://qrsadakat.duckdns.org` — Caddy (`/root/caddy/sites/qrsadakat.duckdns.org.Caddyfile`)
-`qrsadakat-app:8088` konteynerine yönlendirir ve şimdilik **tüm siteye** Basic Auth
-uygular (kullanıcı `admin`; depodaki [`deploy/Caddyfile`](deploy/Caddyfile) parola
-özeti yerine yer tutucu taşır). Bu koruma açıkken müşteriler de QR sonrası parola
-penceresi görür; gerçek müşteriyle denemeden önce kaldırılmalı.
+`https://qrsadakat.duckdns.org`: Caddy (`/root/caddy/sites/qrsadakat.duckdns.org.Caddyfile`)
+`qrsadakat-app:8088` konteynerine yönlendirir. Site herkese açık; 27 Eyl 2026'da Basic Auth
+kaldırıldı (eski dosyanın yedeği `/root/backups/qrsadakat/`). `X-Robots-Tag: noindex` duruyor,
+arama motorları pilotu dizine eklemez. Demo modu açıkken "Hazır demoyu aç" düğmesiyle herkes
+Nora Café panelini görebilir ve demo ödüllerini onaylayabilir; bu yalnız demo verisidir.
 
 DuckDNS anahtarı `/root/secrets/qrsadakat-duckdns-token`; `qrsadakat-duckdns.timer`
 beş dakikada bir `deploy/update_duckdns.py` çalıştırır. Veri `qrsadakat_qrsadakat_data`
