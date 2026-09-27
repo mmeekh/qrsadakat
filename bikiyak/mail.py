@@ -77,7 +77,8 @@ def render_welcome(name: str = "") -> tuple[str, str, str]:
         for i, (title, body) in enumerate(STEPS, 1))
     banner_file = config.STATIC_DIR / BANNER
     if banner_file.is_file():
-        band = (f'<td style="padding:0;line-height:0;background:{PRIMARY}"><img src="{site()}/{BANNER}" width="560" alt="" '
+        band = (f'<td style="padding:0;line-height:0;background:{PRIMARY}"><img src="{site()}/{BANNER}" width="560" '
+                f'alt="bikıyak\'a hoş geldin! Her ziyarette bi kıyak." '
                 f'style="display:block;width:100%;max-width:560px;height:auto;border:0"></td>')
     else:
         # Until the banner exists: the ticket logo on the brand colour, same height, never a broken image.

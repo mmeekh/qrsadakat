@@ -49,5 +49,11 @@ class WelcomeMailTest(ServerTest):
         self.assertIn("Merhaba <b>Ali</b>,", text)
         self.assertIn("/?view=cards", document)
         self.assertIn("/gizlilik", document)
-        self.assertIn("logo-ticket.png", document)  # no banner yet: logo band instead of a broken image
+        self.assertIn("brand/mail-banner.jpg", document)
+        original = mail.BANNER
+        mail.BANNER = "brand/yok.jpg"
+        try:
+            self.assertIn("logo-ticket.png", mail.render_welcome("Ali")[2])  # no banner file: logo band, no broken image
+        finally:
+            mail.BANNER = original
         self.assertEqual(mail.first_name("ayse@example.com"), "")
