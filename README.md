@@ -11,8 +11,11 @@ Claude'a devredildi ve Cheabby adını aldı. Görsel tema demo içindir, deği�
 
 ## Akış
 
-1. İşletme sahibi Google ile girer; işletme adı, kategori, ödül, damga hedefi ve
+1. İşletme sahibi Google ile girer; işletme adı, kategori, damga hedefi, ödül türü ve
    haritadaki yerini (adres araması, "konumumu kullan" veya haritaya dokunma) girer.
+   Ödül türleri: **bedava ürün** ("6 damga topla, 1 kahve bedava"), **yüzde indirim**
+   (%5–100), **tutar indirimi** (1–10.000 ₺) ya da **kendi metni**. Kart metnini sunucu
+   kurar (`merchants.reward_title`); ödül türü sonradan değişebilir, damga hedefi değişmez.
 2. **QR** sekmesi kategoriye göre temalı kasa QR'ını gösterir (kafe → kahve fincanı,
    fırın → ekmek, berber → berber direği...). Kod her dakika yenilenir, ekran açık kalır.
 3. Müşteri QR'ı okutur; damga **girişsiz** hemen işlenir (misafir kartı). Hemen ardından
@@ -154,8 +157,9 @@ Her sürüm bir öncekinin üzerine eklenir.
 | Girişsiz ilk damga (misafir kartı, sonra Google ile kaydet) | ✅ |
 | Haritada Cheabby geçen yerler, damga durumum, yol tarifi | ✅ |
 | Kategoriye göre temalı QR | ✅ |
+| İşletme ödül türünü seçer: bedava ürün, % indirim, ₺ indirim, kendi metni | ✅ |
 | Mobil öncelikli arayüz, alt sekme çubuğu | ✅ |
-| Tek tıkla demo (Nora Café + haritada 3 demo yer) | ✅ (`CHEABBY_DEMO_MODE=1`) |
+| Tek tıkla demo (Nora Café + Türkiye geneline 13 hayali yer) | ✅ (`CHEABBY_DEMO_MODE=1`) |
 | Puan ve para iadesi (şimdilik yalnız damga) | ⏳ |
 | Kısa süreli anlık kampanyalar (ör. "18:00'e kadar 2 kat puan") | ⏳ |
 | Kartın telefon cüzdanına eklenmesi (Apple / Google Wallet) | ⏳ |

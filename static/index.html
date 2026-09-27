@@ -47,9 +47,20 @@
         <form id="setup-form" class="panel setup-form">
           <label>İşletme adı<input name="business_name" maxlength="80" required placeholder="Örn. Nora Café"></label>
           <label>Kategori<select name="category" required></select></label>
-          <label>Ödülün<input name="reward_title" maxlength="80" required placeholder="Örn. 5 kahve al, 1 kahve kazan"></label>
           <label>Ödül için gereken damga<input name="stamps_required" type="number" min="2" max="20" value="5" required></label>
           <p id="stamps-hint" class="muted hidden">Damga hedefi, açık kartlar bu hedefe göre ilerlediği için değiştirilemez.</p>
+          <fieldset class="reward-picker">
+            <legend>Hedef dolunca müşteriye ne vereceksin?</legend>
+            <label class="reward-option"><input type="radio" name="reward_type" value="free" checked><span><b>Bedava ürün</b><small>Ör. 1 kahve, 1 simit</small></span></label>
+            <label class="reward-option"><input type="radio" name="reward_type" value="percent"><span><b>Yüzde indirim</b><small>Ör. %20 indirim</small></span></label>
+            <label class="reward-option"><input type="radio" name="reward_type" value="amount"><span><b>Tutar indirimi</b><small>Ör. 50 ₺ indirim</small></span></label>
+            <label class="reward-option"><input type="radio" name="reward_type" value="custom"><span><b>Kendi metnim</b><small>Ör. doğum gününde pasta</small></span></label>
+          </fieldset>
+          <label data-reward="free">Bedava verilecek ürün<input name="reward_item" maxlength="40" required placeholder="Örn. 1 kahve"></label>
+          <label data-reward="percent">İndirim oranı (%)<input name="reward_percent" type="number" min="5" max="100" value="20" required></label>
+          <label data-reward="amount">İndirim tutarı (₺)<input name="reward_money" type="number" min="1" max="10000" value="50" required></label>
+          <label data-reward="custom">Ödül metni<input name="reward_title" maxlength="80" required placeholder="Örn. 5 kahve al, 1 kahve bizden"></label>
+          <p class="reward-preview">Müşterin kartında şunu görecek: <b id="reward-preview"></b></p>
           <label>Adres<span class="input-row"><input name="address" maxlength="160" required placeholder="Mahalle, sokak, ilçe"><button id="geocode-button" class="button secondary small" type="button">Haritada bul</button></span></label>
           <div id="geocode-results" class="geocode-results"></div>
           <div class="map-tools"><span id="pin-status" class="muted"></span><button id="setup-locate" class="text-button" type="button">Konumumu kullan</button></div>

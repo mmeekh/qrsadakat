@@ -76,7 +76,7 @@ async function loadDashboard() {
       h("small", {}, `${new Date(item.approved_at).toLocaleString("tr-TR")} · ${item.visits}. ziyaret`)),
     h("span", { class: "recent-stamp" }, "✳")]);
   fillList($("redemption-list"), data.redemptions, "Henüz kullanılmayı bekleyen ödül yok.", (item) => [
-    h("div", {}, h("strong", {}, item.customer), h("small", {}, `${new Date(item.created_at).toLocaleString("tr-TR")} · Ödül hazır`)),
+    h("div", {}, h("strong", {}, item.customer), h("small", {}, `${new Date(item.created_at).toLocaleString("tr-TR")} · Verilecek: ${data.merchant.reward_title}`)),
     h("button", { type: "button", onclick: (event) => approve(event.currentTarget, item.id) }, "Ödülü teslim ettim")]);
 }
 

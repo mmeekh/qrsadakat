@@ -95,5 +95,5 @@ class MigrationTest(ServerTest):
         db.migrate()
         with closing(db.connect()) as upgraded:
             self.assertEqual(upgraded.execute("PRAGMA user_version").fetchone()[0], len(db.MIGRATIONS))
-            row = upgraded.execute("SELECT business_name, user_id, lat FROM merchants").fetchone()
-            self.assertEqual(tuple(row), ("Kafe", None, None))
+            row = upgraded.execute("SELECT business_name, user_id, lat, reward_type FROM merchants").fetchone()
+            self.assertEqual(tuple(row), ("Kafe", None, None, "custom"))

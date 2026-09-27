@@ -106,7 +106,15 @@ def m002_google_accounts_and_places(db: sqlite3.Connection) -> None:
     """)
 
 
-MIGRATIONS = (m001_pilot, m002_google_accounts_and_places)
+def m003_reward_types(db: sqlite3.Connection) -> None:
+    """Businesses pick what the reward is: a free item, a percent or amount discount, or own text.
+    Existing businesses keep their text as 'custom'."""
+    add_columns(db, "merchants", (("reward_type", "TEXT NOT NULL DEFAULT 'custom'"),
+                                  ("reward_item", "TEXT NOT NULL DEFAULT ''"),
+                                  ("reward_amount", "INTEGER NOT NULL DEFAULT 0")))
+
+
+MIGRATIONS = (m001_pilot, m002_google_accounts_and_places, m003_reward_types)
 
 
 def migrate() -> None:

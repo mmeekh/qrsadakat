@@ -100,6 +100,27 @@ class ProfileAndMapTest(ServerTest):
         self.assertEqual((updated["slug"], updated["business_name"], updated["stamps_required"]),
                          (created["slug"], "Yeni Ad", 5))
 
+    def test_reward_types_build_the_card_text(self):
+        owner = self.client()
+        self.login(owner, "owner", intent="merchant")
+        base = {"business_name": "Kafe", "stamps_required": 6, "category": "Kafe",
+                "address": "Moda", "lat": 40.9, "lng": 29.0}
+        for broken in ({"reward_type": "free", "reward_item": ""}, {"reward_type": "percent", "reward_amount": 3},
+                       {"reward_type": "percent", "reward_amount": 101}, {"reward_type": "amount", "reward_amount": 0},
+                       {"reward_type": "custom", "reward_title": " "}, {"reward_type": "bedava"}):
+            self.call(owner, "/api/merchant", {**base, **broken}, 400)
+        free = self.call(owner, "/api/merchant", {**base, "reward_type": "free", "reward_item": "1 kahve"})["merchant"]
+        self.assertEqual((free["reward_title"], free["reward_type"]), ("6 damga topla, 1 kahve bedava", "free"))
+        # The goal is fixed after creation, so the text keeps using 6 even if 9 is posted.
+        percent = self.call(owner, "/api/merchant", {**base, "stamps_required": 9, "reward_type": "percent",
+                                                     "reward_amount": 20, "reward_item": "unused"})["merchant"]
+        self.assertEqual((percent["reward_title"], percent["reward_item"]), ("6 damga topla, %20 indirim kazan", ""))
+        amount = self.call(owner, "/api/merchant", {**base, "reward_type": "amount", "reward_amount": 50})["merchant"]
+        self.assertEqual(amount["reward_title"], "6 damga topla, 50 ₺ indirim kazan")
+        custom = self.call(owner, "/api/merchant", {**base, "reward_type": "custom",
+                                                    "reward_title": "Doğum gününde pasta"})["merchant"]
+        self.assertEqual((custom["reward_title"], custom["reward_amount"]), ("Doğum gününde pasta", 0))
+
     def test_map_lists_pinned_places_with_my_progress(self):
         owner, customer, guest = self.client(), self.client(), self.client()
         merchant = self.open_business(owner, "owner")

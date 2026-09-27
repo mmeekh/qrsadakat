@@ -11,11 +11,12 @@ from .db import utcnow, write
 from .web import ApiError, Request, Router
 
 routes = Router()
+REWARD_TYPES = ("free", "percent", "amount", "custom")
 
 
 def public_merchant(row: sqlite3.Row) -> dict:
-    return {k: row[k] for k in ("id", "business_name", "slug", "reward_title", "stamps_required",
-                                "category", "address", "lat", "lng")}
+    return {k: row[k] for k in ("id", "business_name", "slug", "reward_title", "stamps_required", "category",
+                                "address", "lat", "lng", "reward_type", "reward_item", "reward_amount")}
 
 
 def merchant_of(db: sqlite3.Connection, user_id: int) -> sqlite3.Row | None:
@@ -40,9 +41,41 @@ def clean(value: object, limit: int) -> str:
     return " ".join(str(value or "").split())[:limit]
 
 
+def reward_title(kind: str, item: str, amount: int, required: int, custom: str) -> str:
+    """What customers read on the card and the map."""
+    if kind == "free":
+        return f"{required} damga topla, {item} bedava"
+    if kind == "percent":
+        return f"{required} damga topla, %{amount} indirim kazan"
+    if kind == "amount":
+        return f"{required} damga topla, {amount} ₺ indirim kazan"
+    return custom
+
+
+def read_reward(data: dict) -> dict:
+    kind = str(data.get("reward_type") or "custom")
+    item, custom = clean(data.get("reward_item"), 40), clean(data.get("reward_title"), 80)
+    try:
+        amount = int(data.get("reward_amount") or 0)
+    except (ValueError, TypeError):
+        raise ApiError(400, "İndirim bir sayı olmalı.") from None
+    if kind not in REWARD_TYPES:
+        raise ApiError(400, "Ödül türü geçersiz.")
+    if kind == "free" and len(item) < 2:
+        raise ApiError(400, "Bedava verilecek ürünü yaz (ör. 1 kahve).")
+    if kind == "percent" and not 5 <= amount <= 100:
+        raise ApiError(400, "İndirim oranı %5 ile %100 arasında olmalı.")
+    if kind == "amount" and not 1 <= amount <= 10_000:
+        raise ApiError(400, "İndirim tutarı 1 ile 10.000 ₺ arasında olmalı.")
+    if kind == "custom" and not custom:
+        raise ApiError(400, "Ödül metnini yaz.")
+    return {"reward_type": kind, "reward_item": item if kind == "free" else "",
+            "reward_amount": amount if kind in ("percent", "amount") else 0, "custom": custom}
+
+
 def read_profile(data: dict) -> dict:
     profile = {"business_name": clean(data.get("business_name"), 80),
-               "reward_title": clean(data.get("reward_title"), 80),
+               **read_reward(data),
                "category": str(data.get("category", "")),
                "address": clean(data.get("address"), 160)}
     try:
@@ -50,7 +83,7 @@ def read_profile(data: dict) -> dict:
         profile["lat"], profile["lng"] = float(data.get("lat")), float(data.get("lng"))
     except (ValueError, TypeError):
         raise ApiError(400, "Haritada işletmenin yerini seç.") from None
-    if not (profile["business_name"] and profile["reward_title"] and profile["category"] in config.CATEGORIES
+    if not (profile["business_name"] and profile["category"] in config.CATEGORIES
             and len(profile["address"]) >= 3 and 2 <= profile["stamps_required"] <= 20):
         raise ApiError(400, "Alanları kontrol et.")
     if not (-90 <= profile["lat"] <= 90 and -180 <= profile["lng"] <= 180) \
@@ -67,16 +100,22 @@ def save_profile(req: Request) -> dict:
         existing = merchant_of(db, user["id"])
         if existing:
             # The stamp goal stays fixed: open cards were counted against it.
+            profile["stamps_required"] = existing["stamps_required"]
+        profile["reward_title"] = reward_title(profile["reward_type"], profile["reward_item"], profile["reward_amount"],
+                                               profile["stamps_required"], profile.pop("custom"))
+        if existing:
             db.execute("""UPDATE merchants SET business_name=:business_name, reward_title=:reward_title,
+              reward_type=:reward_type, reward_item=:reward_item, reward_amount=:reward_amount,
               category=:category, address=:address, lat=:lat, lng=:lng WHERE id=:id""",
                        {**profile, "id": existing["id"]})
             merchant_id = existing["id"]
         else:
             # merchants.email is UNIQUE from the password era; the account id keeps it unique.
             merchant_id = db.execute("""INSERT INTO merchants(name,email,password_hash,business_name,slug,
-              reward_title,stamps_required,created_at,user_id,category,address,lat,lng)
+              reward_title,stamps_required,created_at,user_id,category,address,lat,lng,
+              reward_type,reward_item,reward_amount)
               VALUES(:name,:email,'',:business_name,:slug,:reward_title,:stamps_required,:now,:user_id,
-              :category,:address,:lat,:lng)""", {
+              :category,:address,:lat,:lng,:reward_type,:reward_item,:reward_amount)""", {
                 **profile, "name": user["name"], "email": f"{user['email']}#{user['id']}",
                 "slug": secrets.token_urlsafe(8).lower().replace("_", "-"), "now": utcnow(),
                 "user_id": user["id"]}).lastrowid

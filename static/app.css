@@ -107,3 +107,12 @@
 .leaflet-container .place-popup a.button{color:var(--ink)}
 .save-banner{grid-column:1/-1;background:#fff7e3;border:1px solid #ecd9a8;border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px}
 .save-banner p{margin:0;font-weight:700;line-height:1.5}
+.reward-picker{border:0;padding:0;margin:14px 0 4px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.reward-picker legend{font-size:13px;font-weight:800;margin-bottom:8px;padding:0}
+.setup-form .reward-option{margin:0;display:flex;gap:10px;align-items:flex-start;border:1px solid #d1d8cf;border-radius:10px;padding:11px;background:#fff;cursor:pointer}
+.setup-form .reward-option input{width:auto;margin:3px 0 0;accent-color:var(--accent)}
+.reward-option b{display:block;font-size:14px}
+.reward-option small{display:block;color:var(--muted);font-weight:600;margin-top:2px}
+.reward-option:has(input:checked){border-color:var(--accent);background:var(--surface-2)}
+.reward-preview{margin:6px 0 4px;font-size:13px;color:var(--muted)}
+.reward-preview b{color:var(--ink)}

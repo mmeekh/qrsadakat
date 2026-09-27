@@ -4,6 +4,7 @@ import { baseMap, loadLeaflet, locate, pinIcon } from "../map-kit.js";
 import { defineView, go } from "../nav.js";
 import { refreshMe, state } from "../state.js";
 import { $, h, toast } from "../ui.js";
+import { fillReward, rewardFields } from "./reward-picker.js";
 
 const form = $("setup-form");
 let L = null;
@@ -17,12 +18,13 @@ defineView("setup", {
     const merchant = state.me.merchant;
     $("setup-title").textContent = merchant ? "İşletme bilgileri" : "İşletmeni ekle";
     form.category.replaceChildren(...state.config.categories.map((name) => h("option", { value: name }, name)));
-    for (const field of ["business_name", "reward_title", "category", "address", "lat", "lng"]) {
+    for (const field of ["business_name", "category", "address", "lat", "lng"]) {
       form[field].value = merchant?.[field] ?? (field === "category" ? "Kafe" : "");
     }
     form.stamps_required.value = merchant?.stamps_required ?? 5;
     form.stamps_required.disabled = Boolean(merchant);
     $("stamps-hint").classList.toggle("hidden", !merchant);
+    fillReward(merchant);
     $("geocode-results").replaceChildren();
     $("setup-submit").firstChild.textContent = merchant ? "Kaydet " : "Kartımı oluştur ";
     try { L = await loadLeaflet(); } catch (error) { return toast(error.message); }
@@ -69,7 +71,7 @@ form.addEventListener("submit", async (event) => {
   if (!form.lat.value) return toast("Haritada işletmenin yerini seç.");
   $("setup-submit").disabled = true;
   try {
-    const body = Object.fromEntries(new FormData(form).entries());
+    const body = { ...Object.fromEntries(new FormData(form).entries()), ...rewardFields() };
     body.stamps_required = form.stamps_required.value;
     await api("/api/merchant", { method: "POST", body });
     await refreshMe();
