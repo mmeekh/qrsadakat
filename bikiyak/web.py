@@ -137,7 +137,7 @@ def make_handler(router: Router):
     files = static_files()
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "Cheabby/0.2"
+        server_version = "bikiyak/0.3"
 
         def log_message(self, format: str, *args) -> None:
             # The OAuth callback carries a one-time code in its query string; keep it out of logs.

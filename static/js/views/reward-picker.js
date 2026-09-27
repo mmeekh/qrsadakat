@@ -1,8 +1,8 @@
-// The reward part of the business form: free item, percent or amount discount, or own text.
-// The server builds the final wording (cheabby/merchants.py reward_title); this mirrors it for the preview.
+// The reward part of the card form: free item, percent or amount discount, or own text.
+// The server builds the final wording (programs.reward_title on the server); this mirrors it for the preview.
 import { $ } from "../ui.js";
 
-const form = $("setup-form");
+const form = $("program-form");
 const kind = () => form.querySelector("input[name=reward_type]:checked").value;
 
 export function rewardText() {
@@ -26,13 +26,13 @@ function refresh() {
   $("reward-preview").textContent = rewardText();
 }
 
-export function fillReward(merchant) {
-  const type = merchant?.reward_type || "free";
+export function fillReward(program) {
+  const type = program?.reward_type || "free";
   form.querySelector(`input[name=reward_type][value="${type}"]`).checked = true;
-  form.reward_item.value = merchant?.reward_item || "";
-  form.reward_percent.value = type === "percent" ? merchant.reward_amount : 20;
-  form.reward_money.value = type === "amount" ? merchant.reward_amount : 50;
-  form.reward_title.value = type === "custom" ? merchant?.reward_title || "" : "";
+  form.reward_item.value = program?.reward_item || "";
+  form.reward_percent.value = type === "percent" ? program.reward_amount : 20;
+  form.reward_money.value = type === "amount" ? program.reward_amount : 50;
+  form.reward_title.value = type === "custom" ? program?.title || "" : "";
   refresh();
 }
 

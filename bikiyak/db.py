@@ -114,7 +114,41 @@ def m003_reward_types(db: sqlite3.Connection) -> None:
                                   ("reward_amount", "INTEGER NOT NULL DEFAULT 0")))
 
 
-MIGRATIONS = (m001_pilot, m002_google_accounts_and_places, m003_reward_types)
+def m004_reward_cards(db: sqlite3.Connection) -> None:
+    """A business can run several reward cards ("programs"); customer cards belong to one.
+    Each business's current reward becomes its first card, and customer cards move onto it
+    with their stamps, visits and rewards. The reward columns on merchants are kept unused."""
+    run(db, """
+    CREATE TABLE programs (
+      id INTEGER PRIMARY KEY, merchant_id INTEGER NOT NULL REFERENCES merchants(id),
+      title TEXT NOT NULL, reward_type TEXT NOT NULL, reward_item TEXT NOT NULL DEFAULT '',
+      reward_amount INTEGER NOT NULL DEFAULT 0,
+      stamps_required INTEGER NOT NULL CHECK(stamps_required BETWEEN 2 AND 20),
+      archived_at TEXT, created_at TEXT NOT NULL);
+    CREATE INDEX programs_merchant ON programs(merchant_id);
+    INSERT INTO programs(merchant_id,title,reward_type,reward_item,reward_amount,stamps_required,created_at)
+      SELECT id, reward_title, reward_type, reward_item, reward_amount, stamps_required, created_at
+      FROM merchants WHERE reward_title<>'';
+    CREATE TABLE cards_new (
+      id INTEGER PRIMARY KEY, program_id INTEGER NOT NULL REFERENCES programs(id),
+      merchant_id INTEGER NOT NULL REFERENCES merchants(id),
+      customer_id INTEGER NOT NULL REFERENCES customers(id), stamps INTEGER NOT NULL DEFAULT 0,
+      visits INTEGER NOT NULL DEFAULT 0, rewards_available INTEGER NOT NULL DEFAULT 0,
+      rewards_redeemed INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL,
+      UNIQUE(program_id, customer_id));
+    INSERT INTO cards_new(id,program_id,merchant_id,customer_id,stamps,visits,rewards_available,rewards_redeemed,created_at)
+      SELECT c.id, p.id, c.merchant_id, c.customer_id, c.stamps, c.visits, c.rewards_available,
+             c.rewards_redeemed, c.created_at
+      FROM cards c JOIN programs p ON p.merchant_id=c.merchant_id;
+    DROP TABLE cards;
+    ALTER TABLE cards_new RENAME TO cards;
+    CREATE INDEX cards_merchant ON cards(merchant_id);
+    CREATE INDEX cards_customer ON cards(customer_id)
+    """)
+    add_columns(db, "oauth_states", (("program_id", "INTEGER"),))
+
+
+MIGRATIONS = (m001_pilot, m002_google_accounts_and_places, m003_reward_types, m004_reward_cards)
 
 
 def migrate() -> None:
@@ -122,7 +156,13 @@ def migrate() -> None:
     with closing(connect()) as db:
         db.execute("PRAGMA journal_mode=WAL")
         version = db.execute("PRAGMA user_version").fetchone()[0]
+        # Rebuilding a referenced table needs foreign keys off (only possible outside a
+        # transaction); integrity is checked before the step commits.
+        db.execute("PRAGMA foreign_keys=OFF")
         for number, step in enumerate(MIGRATIONS[version:], start=version + 1):
             with write(db):
                 step(db)
+                broken = db.execute("PRAGMA foreign_key_check").fetchall()
+                if broken:
+                    raise RuntimeError(f"migration {number} broke foreign keys: {[tuple(r) for r in broken[:5]]}")
                 db.execute(f"PRAGMA user_version={number}")

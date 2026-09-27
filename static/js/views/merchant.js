@@ -1,26 +1,27 @@
-// The business side: the counter QR (refreshed every minute) and the dashboard.
-import { api, signIn } from "../api.js";
+// The business side: one card's counter QR (refreshed every minute) and the dashboard.
+import { api } from "../api.js";
 import { defineView, go } from "../nav.js";
 import { renderThemedQr } from "../qr-themes.js";
 import { state } from "../state.js";
 import { $, h, toast } from "../ui.js";
+import { requireMerchant } from "./programs.js";
 
 let qrTimer = null;
 let qrTicker = null;
 let generation = 0;
 let wakeLock = null;
-
-function requireMerchant() {
-  if (!state.me.user) { signIn("merchant").catch((error) => toast(error.message)); return null; }
-  if (!state.me.merchant) { go("setup"); return null; }
-  return state.me.merchant;
-}
+let program = null;
 
 defineView("qr", {
-  async render() {
+  tab: "programs",
+  async render(options = {}) {
     const merchant = requireMerchant();
     if (!merchant) return;
+    // Opened from a card in Kartlarım; a reload has no card, so go back to the list.
+    if (!options.program) return go("programs");
+    program = options.program;
     $("qr-business").textContent = merchant.business_name;
+    $("qr-program").textContent = program.title;
     await refreshQr();
     // Keeps the counter screen awake while the QR is shown, where the browser allows it.
     try { wakeLock = await navigator.wakeLock?.request("screen"); } catch { wakeLock = null; }
@@ -40,9 +41,9 @@ async function refreshQr() {
   clearInterval(qrTicker);
   const merchant = state.me.merchant;
   try {
-    const data = await api("/api/merchant/qr");
+    const data = await api(`/api/programs/${program.id}/qr`);
     if (mine !== generation) return;
-    const url = `${location.origin}/?c=${encodeURIComponent(merchant.slug)}&s=${encodeURIComponent(data.scan_token)}`;
+    const url = `${location.origin}/?k=${program.id}&s=${encodeURIComponent(data.scan_token)}`;
     renderThemedQr($("qr-stage"), url, merchant.category, merchant.business_name);
     const deadline = performance.now() + data.refresh_in_ms;
     const tick = () => {
@@ -60,8 +61,10 @@ async function refreshQr() {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (!document.hidden && !$("qr-view").classList.contains("hidden")) refreshQr();
+  if (!document.hidden && program && !$("qr-view").classList.contains("hidden")) refreshQr();
 });
+
+$("qr-back").addEventListener("click", () => go("programs"));
 
 defineView("dashboard", { render: loadDashboard });
 
@@ -71,12 +74,12 @@ async function loadDashboard() {
   $("dashboard-title").textContent = data.merchant.business_name;
   for (const key of ["customers", "returning", "visits", "redeemed"]) $(`metric-${key}`).textContent = data.metrics[key];
   $("location-banner").classList.toggle("hidden", data.merchant.lat != null);
-  fillList($("recent-list"), data.recent, "Henüz damga yok. QR kodunu kasada göster.", (item) => [
+  fillList($("recent-list"), data.recent, "Henüz damga yok. Kartlarım'dan bir karta dokun, QR'ı kasada göster.", (item) => [
     h("div", {}, h("strong", {}, `${item.customer} · Damga işlendi`),
-      h("small", {}, `${new Date(item.approved_at).toLocaleString("tr-TR")} · ${item.visits}. ziyaret`)),
+      h("small", {}, `${new Date(item.approved_at).toLocaleString("tr-TR")} · ${item.visits}. ziyaret · ${item.program}`)),
     h("span", { class: "recent-stamp" }, "✳")]);
   fillList($("redemption-list"), data.redemptions, "Henüz kullanılmayı bekleyen ödül yok.", (item) => [
-    h("div", {}, h("strong", {}, item.customer), h("small", {}, `${new Date(item.created_at).toLocaleString("tr-TR")} · Verilecek: ${data.merchant.reward_title}`)),
+    h("div", {}, h("strong", {}, item.customer), h("small", {}, `${new Date(item.created_at).toLocaleString("tr-TR")} · Verilecek: ${item.program}`)),
     h("button", { type: "button", onclick: (event) => approve(event.currentTarget, item.id) }, "Ödülü teslim ettim")]);
 }
 

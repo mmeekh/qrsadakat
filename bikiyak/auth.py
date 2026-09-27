@@ -20,7 +20,8 @@ from .accounts import (adopt_guest, current_user, customer_for_user, customer_of
                        start_session, upsert_user)
 from .db import write
 from .loyalty import apply_stamp, card_for, cards_of, valid_scan_token
-from .merchants import merchant_by_slug, merchant_of, public_merchant
+from .merchants import merchant_of, public_merchant
+from .programs import program_by_id
 from .web import ApiError, Request, Response, Router
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -72,20 +73,22 @@ def start(req: Request) -> Response:
     intent = str(req.body.get("intent", ""))
     if intent not in INTENTS:
         raise ApiError(400, "Geçersiz giriş isteği.")
-    slug, scan_ok = None, False
+    program_id, scan_ok = None, False
     if intent == "card":
-        merchant = merchant_by_slug(req.db, str(req.body.get("slug", "")))
-        slug = merchant["slug"]
+        try:
+            program_id = program_by_id(req.db, int(req.body.get("program") or 0))["id"]
+        except (ValueError, TypeError):
+            raise ApiError(404, "Kart bulunamadı.") from None
         # Checked now, while the QR is fresh; Google may take longer than the QR lives.
-        scan_ok = valid_scan_token(merchant["id"], str(req.body.get("scan_token", "")))
+        scan_ok = valid_scan_token(program_id, str(req.body.get("scan_token", "")))
     state, verifier, nonce = secrets.token_urlsafe(32), secrets.token_urlsafe(64), secrets.token_urlsafe(16)
     browser = req.cookie(BROWSER_COOKIE)
     if not browser or not re.fullmatch(r"[A-Za-z0-9_-]{43}", browser):
         browser = secrets.token_urlsafe(32)
     with write(req.db) as db:
         db.execute("DELETE FROM oauth_states WHERE created_at<?", (time.time() - config.OAUTH_STATE_SECONDS,))
-        db.execute("""INSERT INTO oauth_states(state_hash,browser_hash,verifier,nonce,intent,slug,scan_ok,created_at)
-          VALUES(?,?,?,?,?,?,?,?)""", (digest(state), digest(browser), verifier, nonce, intent, slug,
+        db.execute("""INSERT INTO oauth_states(state_hash,browser_hash,verifier,nonce,intent,program_id,scan_ok,created_at)
+          VALUES(?,?,?,?,?,?,?,?)""", (digest(state), digest(browser), verifier, nonce, intent, program_id,
                                        int(scan_ok), time.time()))
     url = GOOGLE_AUTH_URL + "?" + urlencode({
         "client_id": config.GOOGLE_CLIENT_ID, "redirect_uri": req.origin() + "/auth/google/callback",
@@ -106,7 +109,7 @@ def callback(req: Request) -> Response:
     if not row or row["created_at"] < time.time() - config.OAUTH_STATE_SECONDS \
             or not hmac.compare_digest(row["browser_hash"], digest(req.cookie(BROWSER_COOKIE) or "")):
         return finish(req, Response.redirect("/?login=failed"))
-    back = f"/?c={row['slug']}" if row["intent"] == "card" else f"/?view={row['intent']}"
+    back = f"/?k={row['program_id']}" if row["intent"] == "card" else f"/?view={row['intent']}"
     if not req.arg("code"):
         return finish(req, Response.redirect(back + "&login=cancelled"))
     try:
@@ -119,9 +122,9 @@ def callback(req: Request) -> Response:
     with write(req.db) as db:
         user_id = sign_in(req, response, claims)
         if row["intent"] == "card" and row["scan_ok"]:
-            merchant = merchant_by_slug(db, row["slug"])
+            program = program_by_id(db, row["program_id"])
             try:
-                earned = apply_stamp(db, merchant, card_for(db, merchant["id"], customer_for_user(db, user_id)))
+                earned = apply_stamp(db, program, card_for(db, program, customer_for_user(db, user_id)))
                 response.location += "&stamp=" + ("reward" if earned else "ok")
             except ApiError:
                 response.location += "&stamp=wait"

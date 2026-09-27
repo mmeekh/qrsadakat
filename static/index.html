@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#152a25">
-  <title>Cheabby — Müşterin yeniden gelsin</title>
+  <title>bikıyak — Müşterin yeniden gelsin</title>
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/app.css">
   <script src="/vendor/qrcode.min.js" defer></script>
@@ -13,7 +13,7 @@
 <body>
   <div class="shell">
     <header class="topbar">
-      <a id="brand-home" href="/" class="brand" aria-label="Cheabby ana sayfa"><span class="brand-icon">✳</span> cheab<span>by</span></a>
+      <a id="brand-home" href="/" class="brand" aria-label="bikıyak ana sayfa"><span class="brand-icon">✳</span> bikı<span>yak</span></a>
       <button id="top-account" class="avatar-button hidden" type="button" aria-label="Hesabım"></button>
     </header>
 
@@ -32,7 +32,7 @@
             <p class="footnote">Pilot sürüm · Google hesabınla giriş · Kurulum ücretsiz</p>
           </div>
           <div class="preview-card" aria-label="Sadakat kartı örneği">
-            <div class="preview-top"><span class="mini-logo">✳</span><span>CHEABBY</span></div>
+            <div class="preview-top"><span class="mini-logo">✳</span><span>BİKIYAK</span></div>
             <div class="preview-business">Nora Café</div><div class="preview-reward">5 kahve al, 1 kahve bizden.</div>
             <div class="preview-stamps"><span class="stamp filled">✳</span><span class="stamp filled">✳</span><span class="stamp filled">✳</span><span class="stamp">✳</span><span class="stamp gift">✦</span></div>
             <div class="preview-bottom"><span>3 / 5 damga</span><span>SONRAKİ KAHVEYE AZ KALDI</span></div>
@@ -47,6 +47,24 @@
         <form id="setup-form" class="panel setup-form">
           <label>İşletme adı<input name="business_name" maxlength="80" required placeholder="Örn. Nora Café"></label>
           <label>Kategori<select name="category" required></select></label>
+          <label>Adres<span class="input-row"><input name="address" maxlength="160" required placeholder="Mahalle, sokak, ilçe"><button id="geocode-button" class="button secondary small" type="button">Haritada bul</button></span></label>
+          <div id="geocode-results" class="geocode-results"></div>
+          <div class="map-tools"><span id="pin-status" class="muted"></span><button id="setup-locate" class="text-button" type="button">Konumumu kullan</button></div>
+          <div id="setup-map" class="setup-map"></div>
+          <input name="lat" type="hidden"><input name="lng" type="hidden">
+          <button id="setup-submit" class="button primary full" type="submit">İşletmemi oluştur <span>↗</span></button>
+        </form>
+      </section>
+
+      <section id="programs-view" class="view hidden">
+        <div class="page-head compact"><div><div class="eyebrow">İŞLETME</div><h1>Kartlarım</h1><p id="programs-hint">Damga vermek için karta dokun, QR açılsın.</p></div><button id="new-program" class="button primary small" type="button">Yeni kart</button></div>
+        <div id="program-list" class="cards-list"></div>
+        <div id="archived-list" class="cards-list archived-list"></div>
+      </section>
+
+      <section id="program-view" class="view hidden">
+        <div class="page-head compact"><div><button id="program-back" class="back-link" type="button">← Kartlarım</button><div class="eyebrow">KART</div><h1 id="program-title">Yeni kart</h1></div></div>
+        <form id="program-form" class="panel setup-form">
           <label>Ödül için gereken damga<input name="stamps_required" type="number" min="2" max="20" value="5" required></label>
           <p id="stamps-hint" class="muted hidden">Damga hedefi, açık kartlar bu hedefe göre ilerlediği için değiştirilemez.</p>
           <fieldset class="reward-picker">
@@ -61,19 +79,17 @@
           <label data-reward="amount">İndirim tutarı (₺)<input name="reward_money" type="number" min="1" max="10000" value="50" required></label>
           <label data-reward="custom">Ödül metni<input name="reward_title" maxlength="80" required placeholder="Örn. 5 kahve al, 1 kahve bizden"></label>
           <p class="reward-preview">Müşterin kartında şunu görecek: <b id="reward-preview"></b></p>
-          <label>Adres<span class="input-row"><input name="address" maxlength="160" required placeholder="Mahalle, sokak, ilçe"><button id="geocode-button" class="button secondary small" type="button">Haritada bul</button></span></label>
-          <div id="geocode-results" class="geocode-results"></div>
-          <div class="map-tools"><span id="pin-status" class="muted"></span><button id="setup-locate" class="text-button" type="button">Konumumu kullan</button></div>
-          <div id="setup-map" class="setup-map"></div>
-          <input name="lat" type="hidden"><input name="lng" type="hidden">
-          <button id="setup-submit" class="button primary full" type="submit">Kartımı oluştur <span>↗</span></button>
+          <button id="program-submit" class="button primary full" type="submit">Kartı oluştur <span>↗</span></button>
+          <button id="program-archive" class="button outline full hidden" type="button">Kartı arşivle</button>
         </form>
       </section>
 
       <section id="qr-view" class="view hidden">
         <div class="qr-screen">
+          <button id="qr-back" class="back-link" type="button">← Kartlarım</button>
           <div class="eyebrow">KASA QR'I</div>
           <h1 id="qr-business">İşletmem</h1>
+          <p id="qr-program" class="qr-program"></p>
           <div id="qr-stage" class="qr-stage"></div>
           <p id="qr-countdown" class="qr-countdown" role="status">QR hazırlanıyor…</p>
           <p class="qr-help">Müşterin kendi telefonunun kamerasıyla okutsun; damga anında işlenir. Kod her dakika yenilenir.</p>
@@ -90,7 +106,7 @@
         </div>
       </section>
 
-      <section id="card-view" class="view hidden"><div class="customer-layout"><div class="customer-intro"><div class="eyebrow">DİJİTAL SADAKAT KARTIN</div><h1>Her ziyaret<br><em>bir adım daha.</em></h1><p>Kasadaki güncel QR kodunu okut; damgan hemen kartına işlensin.</p><div class="customer-note">İlk damgan girişsiz işlenir. Google ile kaydedince kartın hangi telefondan girersen gir seninle.</div></div><div id="customer-card" class="customer-card panel"><div class="customer-card-head"><span class="mini-logo">✳</span><span>CHEABBY</span></div><h2 id="card-business">İşletme</h2><p id="card-reward">Ödül</p><div id="card-stamps" class="card-stamps"></div><div class="progress-row"><span id="card-progress">0 / 5 damga</span><span id="card-available"></span></div><div class="progress-track"><div id="card-progress-bar"></div></div><p id="card-id" class="card-id"></p><div id="stamp-effect" class="stamp-effect hidden" role="status"><span class="stamp-effect-mark">✳</span><strong id="stamp-effect-title">Damga eklendi!</strong></div><div id="card-gate" class="card-gate hidden"><p id="gate-text"></p><div id="gate-action"></div></div><button id="redeem-button" class="button secondary full hidden" type="button">Ödülümü kullan</button><p id="card-status" class="card-status" role="status"></p><button id="refresh-card" class="text-button" type="button">Kartı yenile ↻</button></div></div></section>
+      <section id="card-view" class="view hidden"><div class="customer-layout"><div class="customer-intro"><div class="eyebrow">DİJİTAL SADAKAT KARTIN</div><h1>Her ziyaret<br><em>bir adım daha.</em></h1><p>Kasadaki güncel QR kodunu okut; damgan hemen kartına işlensin.</p><div class="customer-note">İlk damgan girişsiz işlenir. Google ile kaydedince kartın hangi telefondan girersen gir seninle.</div></div><div id="customer-card" class="customer-card panel"><div class="customer-card-head"><span class="mini-logo">✳</span><span>BİKIYAK</span></div><h2 id="card-business">İşletme</h2><p id="card-reward">Ödül</p><div id="card-stamps" class="card-stamps"></div><div class="progress-row"><span id="card-progress">0 / 5 damga</span><span id="card-available"></span></div><div class="progress-track"><div id="card-progress-bar"></div></div><p id="card-id" class="card-id"></p><div id="stamp-effect" class="stamp-effect hidden" role="status"><span class="stamp-effect-mark">✳</span><strong id="stamp-effect-title">Damga eklendi!</strong></div><div id="card-gate" class="card-gate hidden"><p id="gate-text"></p><div id="gate-action"></div></div><button id="redeem-button" class="button secondary full hidden" type="button">Ödülümü kullan</button><p id="card-status" class="card-status" role="status"></p><button id="refresh-card" class="text-button" type="button">Kartı yenile ↻</button></div></div></section>
 
       <section id="map-view" class="view hidden">
         <div class="page-head compact"><div><div class="eyebrow">HARİTA</div><h1>Damga biriktirebileceğin yerler</h1></div><button id="locate-button" class="button secondary small" type="button">Konumumu göster</button></div>
@@ -108,7 +124,7 @@
         <div id="account-body" class="account-body"></div>
       </section>
     </main>
-    <footer><span>✳ cheabby</span><span>Yerel bağlar, tekrar gelen müşteriler.</span><span>2026 · Pilot sürüm</span></footer>
+    <footer><span>✳ bikıyak</span><span>Yerel bağlar, tekrar gelen müşteriler.</span><span>2026 · Pilot sürüm</span></footer>
   </div>
 
   <nav id="tabbar" class="tabbar" aria-label="Ana menü"></nav>

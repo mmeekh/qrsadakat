@@ -16,7 +16,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlsplit
 
-from cheabby import app, auth, config, db
+from bikiyak import app, auth, config, db
 
 
 class FakeGoogle:
@@ -106,9 +106,9 @@ class ServerTest(unittest.TestCase):
         self.assertEqual(response.status, expected, body)
         return json.loads(body)
 
-    def login(self, client, sub, name="Test Kişi", email=None, intent="cards", slug=None, scan=None, **claims):
+    def login(self, client, sub, name="Test Kişi", email=None, intent="cards", program=None, scan=None, **claims):
         """Runs the whole Google round trip and returns where the callback redirected."""
-        start = self.call(client, "/api/auth/start", {"intent": intent, "slug": slug, "scan_token": scan})
+        start = self.call(client, "/api/auth/start", {"intent": intent, "program": program, "scan_token": scan})
         query = parse_qs(urlsplit(start["url"]).query)
         code = "code-" + sub + str(time.monotonic())
         self.google.claims[code] = {"iss": "https://accounts.google.com", "aud": "test-client", "sub": sub,
@@ -119,13 +119,21 @@ class ServerTest(unittest.TestCase):
         return response.headers["Location"], start
 
     def open_business(self, client, sub, name="Nora Café", required=2):
+        """Signs in, opens a business and its first card; returns the card (program)."""
         self.login(client, sub, intent="merchant")
-        return self.call(client, "/api/merchant", {
-            "business_name": name, "reward_title": "2 ziyaret, 1 kahve", "stamps_required": required,
-            "category": "Kafe", "address": "Moda, Kadıköy", "lat": 40.98, "lng": 29.02})["merchant"]
+        self.call(client, "/api/merchant", {"business_name": name, "category": "Kafe", "address": "Moda, Kadıköy",
+                                            "lat": 40.98, "lng": 29.02})
+        return self.new_card(client, required)
 
-    def qr_token(self, client):
-        return self.call(client, "/api/merchant/qr")["scan_token"]
+    def new_card(self, client, required=2, expected=200, **reward):
+        body = {"reward_type": "free", "reward_item": "1 kahve", "stamps_required": required, **reward}
+        return self.call(client, "/api/programs", body, expected).get("program")
+
+    def qr_token(self, client, program_id):
+        return self.call(client, f"/api/programs/{program_id}/qr")["scan_token"]
+
+    def scan(self, client, owner, program_id, expected=200):
+        return self.call(client, f"/api/card/{program_id}/scan", {"scan_token": self.qr_token(owner, program_id)}, expected)
 
     def sql(self, statement, params=()):
         with closing(db.connect()) as connection:

@@ -1,6 +1,6 @@
-// The customer's stamp card for one business, reached by scanning the counter QR
-// (/?c=<slug>&s=<token>). The first stamp needs no sign-in; saving the card, a second
-// business and rewards need Google (rules in cheabby/loyalty.py and accounts.py).
+// The customer's stamp card for one of a business's reward cards, reached by scanning
+// its counter QR (/?k=<card id>&s=<token>). The first stamp needs no sign-in; saving the card, a second
+// business and rewards need Google (rules in bikiyak/loyalty.py and accounts.py).
 import { api, signIn, startLogin } from "../api.js";
 import { defineView, renderTabs } from "../nav.js";
 import { refreshMe, state } from "../state.js";
@@ -16,15 +16,15 @@ const GATES = {
   second: ["Başka bir işletmede de damga toplamak için Google ile giriş yap; damgan girişten hemen sonra işlenir.", "Google ile devam et"],
   start: ["İlk damgan için kasadaki QR'ı okutman yeter, giriş gerekmez. Hesabın varsa giriş yap.", "Google ile giriş yap"],
 };
-let slug = null;
+let cardId = null;
 let card = null;
 let effectTimer = null;
 
 defineView("card", {
   tab: "cards",
-  async render({ slug: next, scan, stamp, login }) {
-    slug = next;
-    history.replaceState({}, "", `/?c=${encodeURIComponent(slug)}`);
+  async render({ id, scan, stamp, login }) {
+    cardId = Number(id);
+    history.replaceState({}, "", `/?k=${cardId}`);
     status("");
     if (scan) return scanNow(scan);
     await load();
@@ -39,17 +39,17 @@ defineView("card", {
 const status = (text) => { $("card-status").textContent = text; };
 
 async function load() {
-  const data = await api(`/api/card/${encodeURIComponent(slug)}`);
-  const { merchant } = data;
+  const data = await api(`/api/card/${cardId}`);
+  const { merchant, program } = data;
   card = data.card;
   $("customer-card").classList.toggle("cafe-photo", merchant.category === "Kafe");
   $("card-business").textContent = merchant.business_name;
-  $("card-reward").textContent = merchant.reward_title;
+  $("card-reward").textContent = program.title;
   const stamps = card ? card.stamps : 0;
-  $("card-stamps").replaceWith(Object.assign(stampDots(stamps, merchant.stamps_required), { id: "card-stamps" }));
-  $("card-progress").textContent = `${stamps} / ${merchant.stamps_required} damga`;
+  $("card-stamps").replaceWith(Object.assign(stampDots(stamps, program.stamps_required), { id: "card-stamps" }));
+  $("card-progress").textContent = `${stamps} / ${program.stamps_required} damga`;
   $("card-available").textContent = card ? `${card.rewards_available} ödül hazır` : "";
-  $("card-progress-bar").style.width = `${100 * stamps / merchant.stamps_required}%`;
+  $("card-progress-bar").style.width = `${100 * stamps / program.stamps_required}%`;
   $("card-id").textContent = card ? `Kart #${card.id}` : "";
   $("refresh-card").classList.toggle("hidden", !card);
   const redeem = $("redeem-button");
@@ -66,11 +66,11 @@ function showGate(kind, scan) {
   const [text, label] = GATES[kind];
   $("gate-text").textContent = text;
   let url = null;
-  $("gate-action").replaceChildren(googleButton(label, () => (url ? (location.href = url) : signIn("card", { slug }))));
+  $("gate-action").replaceChildren(googleButton(label, () => (url ? (location.href = url) : signIn("card", { program: cardId }))));
   $("card-gate").classList.remove("hidden");
   if (!scan) return;
   // Started right away: the QR is checked while fresh, the stamp lands after sign-in.
-  startLogin("card", { slug, scan_token: scan }).then((started) => {
+  startLogin("card", { program: cardId, scan_token: scan }).then((started) => {
     url = started.url;
     if (!started.scan_ok) status("QR'ın süresi dolmuş. Giriş yaptıktan sonra kasadaki güncel QR'ı yeniden okut.");
   }).catch((error) => status(error.message));
@@ -78,7 +78,7 @@ function showGate(kind, scan) {
 
 async function scanNow(token) {
   try {
-    const result = await api(`/api/card/${encodeURIComponent(slug)}/scan`, { method: "POST", body: { scan_token: token } });
+    const result = await api(`/api/card/${cardId}/scan`, { method: "POST", body: { scan_token: token } });
     await load();
     const kind = result.earned_reward ? "reward" : "ok";
     showEffect(kind);
@@ -106,9 +106,9 @@ function showEffect(kind) {
 }
 
 $("redeem-button").addEventListener("click", async () => {
-  if (!state.me.user) return signIn("card", { slug }).catch((error) => status(error.message));
+  if (!state.me.user) return signIn("card", { program: cardId }).catch((error) => status(error.message));
   $("redeem-button").disabled = true;
-  try { await api(`/api/card/${encodeURIComponent(slug)}/redeem`, { method: "POST", body: {} }); await load(); }
+  try { await api(`/api/card/${cardId}/redeem`, { method: "POST", body: {} }); await load(); }
   catch (error) { status(error.message); $("redeem-button").disabled = false; }
 });
 

@@ -14,13 +14,13 @@ $("demo-button").addEventListener("click", async () => {
   try {
     await api("/api/demo/login", { method: "POST", body: {} });
     await refreshMe();
-    await go("qr");
+    await go("programs");
   } catch (error) { toast(error.message); }
   finally { $("demo-button").disabled = false; }
 });
 
 $("start-button").addEventListener("click", () => {
-  if (state.me.user) return go(state.me.merchant ? "qr" : "setup");
+  if (state.me.user) return go(state.me.merchant ? "programs" : "setup");
   signIn("merchant").catch((error) => toast(error.message));
 });
 

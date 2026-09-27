@@ -1,4 +1,4 @@
-// Every business that takes Cheabby stamps, on a map and as a list sorted by distance.
+// Every business that takes bikıyak stamps, on a map and as a list sorted by distance.
 import { api } from "../api.js";
 import { baseMap, directionsUrl, distanceKm, loadLeaflet, locate, pinIcon } from "../map-kit.js";
 import { defineView, go } from "../nav.js";
@@ -34,10 +34,10 @@ defineView("map", {
   },
 });
 
-function progress(place) {
-  if (!place.mine) return "Henüz kartın yok";
-  const reward = place.mine.rewards_available ? ` · ${place.mine.rewards_available} ödül hazır` : "";
-  return `${place.mine.stamps} / ${place.stamps_required} damga${reward}`;
+function progress(program) {
+  if (!program.mine) return "Henüz kartın yok";
+  const reward = program.mine.rewards_available ? ` · ${program.mine.rewards_available} ödül hazır` : "";
+  return `${program.mine.stamps} / ${program.stamps_required} damga${reward}`;
 }
 
 function placeCard(place, compact = false) {
@@ -46,12 +46,12 @@ function placeCard(place, compact = false) {
   return h("div", { class: compact ? "place-popup" : "place-card" },
     h("div", { class: "place-head" }, h("span", { class: `place-icon pin-${theme.slug}` }, theme.icon),
       h("div", {}, h("strong", {}, place.business_name), h("small", {}, `${place.category}${distance}`))),
-    h("p", { class: "place-reward" }, place.reward_title),
-    h("p", { class: "place-progress" }, progress(place)),
+    h("ul", { class: "place-programs" }, place.programs.map((program) => h("li", {},
+      h("span", {}, h("b", {}, program.title), h("small", {}, progress(program))),
+      program.mine ? h("button", { class: "button primary small", type: "button",
+        onclick: () => go("card", { id: program.id }) }, "Kartım") : null))),
     h("div", { class: "place-actions" },
-      h("a", { class: "button secondary small", href: directionsUrl(place.lat, place.lng), target: "_blank", rel: "noopener" }, "Yol tarifi"),
-      place.mine ? h("button", { class: "button primary small", type: "button",
-        onclick: () => go("card", { slug: place.slug }) }, "Kartım") : null));
+      h("a", { class: "button secondary small", href: directionsUrl(place.lat, place.lng), target: "_blank", rel: "noopener" }, "Yol tarifi")));
 }
 
 function renderList() {

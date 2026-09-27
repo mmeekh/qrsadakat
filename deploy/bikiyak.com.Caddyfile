@@ -1,0 +1,16 @@
+# bikıyak.com (IDN; Caddy'ye punycode yazılır). DNS A kayıtları 136.243.228.36'ya
+# yönlenince /root/caddy/sites/ altına kopyalanır; Caddy sertifikayı kendi alır.
+xn--bikyak-r9a.com {
+	encode zstd gzip
+	reverse_proxy qrsadakat-app:8088
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Robots-Tag "noindex, nofollow"
+	}
+}
+
+www.xn--bikyak-r9a.com {
+	redir https://xn--bikyak-r9a.com{uri} permanent
+}

@@ -15,7 +15,7 @@ export async function api(path, { method = "GET", body } = {}) {
   return value;
 }
 
-// Starts a Google sign-in; `intent` says where to land afterwards (see cheabby/auth.py).
+// Starts a Google sign-in; `intent` says where to land afterwards (see bikiyak/auth.py).
 export function startLogin(intent, extra = {}) {
   return api("/api/auth/start", { method: "POST", body: { intent, ...extra } });
 }

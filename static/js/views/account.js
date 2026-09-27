@@ -9,7 +9,7 @@ defineView("account", {
     const { user, merchant } = state.me;
     if (!user) {
       body.replaceChildren(emptyState(
-        "Cheabby'ye Google hesabınla girersin; şifre yok. Müşteriysen kartların, işletmeysen panelin hesabına bağlı kalır.",
+        "bikıyak'a Google hesabınla girersin; şifre yok. Müşteriysen kartların, işletmeysen panelin hesabına bağlı kalır.",
         googleButton("Google ile giriş yap", () => signIn("account"))));
       return;
     }
@@ -21,6 +21,8 @@ defineView("account", {
         merchant
           ? h("button", { class: "button secondary full", type: "button", onclick: () => go("setup") }, `${merchant.business_name} · bilgiler ve konum`)
           : h("button", { class: "button secondary full", type: "button", onclick: () => go("setup") }, "İşletmeni ekle"),
+        merchant ? h("button", { class: "button secondary full", type: "button", onclick: () => go("cards") },
+          "Müşteri olarak kartlarım") : null,
         h("button", { class: "button outline full", type: "button", onclick: logout }, "Çıkış yap")));
   },
 });

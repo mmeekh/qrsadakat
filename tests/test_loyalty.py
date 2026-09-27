@@ -1,142 +1,185 @@
 from __future__ import annotations
 
-from cheabby import loyalty
+from bikiyak import config, demo, loyalty
 from tests.harness import ServerTest
 
 
 class StampCardTest(ServerTest):
     def test_rotating_qr_stamp_reward_and_business_isolation(self):
         owner, other, customer = self.client(), self.client(), self.client()
-        merchant = self.open_business(owner, "owner")
-        self.open_business(other, "other", "Diğer Kafe")
-        slug = merchant["slug"]
+        card_id = self.open_business(owner, "owner")["id"]
+        other_id = self.open_business(other, "other", "Diğer Kafe")["id"]
         self.login(customer, "cust")
-        token, other_token = self.qr_token(owner), self.qr_token(other)
-        self.call(customer, f"/api/card/{slug}/scan", {"scan_token": other_token}, 400)
-        self.call(customer, f"/api/card/{slug}/scan", {"scan_token": "invalid"}, 400)
-        stale = loyalty.make_scan_token(merchant["id"], int(token.split(".")[0]) - 2)
-        self.call(customer, f"/api/card/{slug}/scan", {"scan_token": stale}, 400)
-        self.assertFalse(self.call(customer, f"/api/card/{slug}/scan", {"scan_token": token})["earned_reward"])
-        self.call(customer, f"/api/card/{slug}/scan", {"scan_token": token}, 429)
+        token, other_token = self.qr_token(owner, card_id), self.qr_token(other, other_id)
+        scan = f"/api/card/{card_id}/scan"
+        self.call(customer, scan, {"scan_token": other_token}, 400)
+        self.call(customer, scan, {"scan_token": "invalid"}, 400)
+        stale = loyalty.make_scan_token(card_id, int(token.split(".")[0]) - 2)
+        self.call(customer, scan, {"scan_token": stale}, 400)
+        self.assertFalse(self.call(customer, scan, {"scan_token": token})["earned_reward"])
+        self.call(customer, scan, {"scan_token": token}, 429)
 
         self.age_stamps()
-        self.assertTrue(self.call(customer, f"/api/card/{slug}/scan", {"scan_token": token})["earned_reward"])
-        card = self.call(customer, f"/api/card/{slug}")["card"]
+        self.assertTrue(self.call(customer, scan, {"scan_token": token})["earned_reward"])
+        card = self.call(customer, f"/api/card/{card_id}")["card"]
         self.assertEqual((card["visits"], card["stamps"], card["rewards_available"]), (2, 0, 1))
 
-        self.call(customer, f"/api/card/{slug}/redeem", {})
-        self.call(customer, f"/api/card/{slug}/redeem", {}, 409)
-        reward_id = self.call(owner, "/api/dashboard")["redemptions"][0]["id"]
-        self.call(other, f"/api/redemptions/{reward_id}/approve", {}, 404)
-        self.call(owner, f"/api/redemptions/{reward_id}/approve", {})
-        card = self.call(customer, f"/api/card/{slug}")["card"]
+        self.call(customer, f"/api/card/{card_id}/redeem", {})
+        self.call(customer, f"/api/card/{card_id}/redeem", {}, 409)
+        redemption = self.call(owner, "/api/dashboard")["redemptions"][0]
+        self.assertEqual(redemption["program"], "2 damga topla, 1 kahve bedava")
+        self.call(other, f"/api/redemptions/{redemption['id']}/approve", {}, 404)
+        self.call(owner, f"/api/redemptions/{redemption['id']}/approve", {})
+        card = self.call(customer, f"/api/card/{card_id}")["card"]
         self.assertEqual((card["rewards_available"], card["rewards_redeemed"]), (0, 1))
         metrics = self.call(owner, "/api/dashboard")["metrics"]
         self.assertEqual((metrics["customers"], metrics["returning"], metrics["visits"]), (1, 1, 2))
 
     def test_non_owners_are_refused(self):
         owner, stranger = self.client(), self.client()
-        self.open_business(owner, "owner")
-        self.assertIsNone(self.call(stranger, "/api/card/" + self.call(owner, "/api/me")["merchant"]["slug"])["card"])
-        self.call(stranger, "/api/merchant/qr", expected=401)
+        card_id = self.open_business(owner, "owner")["id"]
+        self.assertIsNone(self.call(stranger, f"/api/card/{card_id}")["card"])
+        self.call(stranger, f"/api/programs/{card_id}/qr", expected=401)
         self.login(stranger, "customer")
-        self.call(stranger, "/api/merchant/qr", expected=403)
+        self.call(stranger, f"/api/programs/{card_id}/qr", expected=403)
+        self.call(stranger, "/api/programs", expected=403)
         self.call(stranger, "/api/dashboard", expected=403)
-        self.call(stranger, "/api/card/unknown", expected=404)
+        self.call(stranger, "/api/card/999", expected=404)
+        self.open_business(stranger, "stranger", "Başka")
+        self.call(stranger, f"/api/programs/{card_id}/qr", expected=404)
+        self.call(stranger, f"/api/programs/{card_id}/archive", {}, 404)
+
+
+class RewardCardsTest(ServerTest):
+    def test_one_business_runs_several_cards_up_to_five(self):
+        owner, customer = self.client(), self.client()
+        coffee = self.open_business(owner, "owner", required=3)
+        dessert = self.new_card(owner, 8, reward_type="percent", reward_amount=20)
+        self.assertEqual(dessert["title"], "8 damga topla, %20 indirim kazan")
+        self.login(customer, "cust")
+        self.scan(customer, owner, coffee["id"])
+        # Each card has its own QR and its own stamps; the hourly limit is per card.
+        self.scan(customer, owner, dessert["id"])
+        self.call(customer, f"/api/card/{dessert['id']}/scan", {"scan_token": self.qr_token(owner, coffee["id"])}, 400)
+        stamps = sorted((c["title"], c["stamps"]) for c in self.call(customer, "/api/me")["cards"])
+        self.assertEqual(stamps, [("3 damga topla, 1 kahve bedava", 1), ("8 damga topla, %20 indirim kazan", 1)])
+        metrics = self.call(owner, "/api/dashboard")["metrics"]
+        self.assertEqual((metrics["customers"], metrics["visits"], metrics["returning"]), (1, 2, 1))
+        listed = self.call(owner, "/api/programs")
+        self.assertEqual(([p["customers"] for p in listed["programs"]], listed["max_active"]), ([1, 1], 5))
+
+        for _ in range(3):
+            self.new_card(owner)
+        self.new_card(owner, expected=409)
+        places = self.call(customer, "/api/places")["places"]
+        self.assertEqual(len(places[0]["programs"]), 5)
+        self.assertEqual(places[0]["programs"][0]["mine"], {"stamps": 1, "rewards_available": 0})
+
+    def test_archived_card_stops_stamping_but_keeps_earned_rewards(self):
+        owner, customer = self.client(), self.client()
+        card_id = self.open_business(owner, "owner", required=2)["id"]
+        self.login(customer, "cust")
+        self.scan(customer, owner, card_id)
+        self.age_stamps()
+        self.assertTrue(self.scan(customer, owner, card_id)["earned_reward"])
+        token = self.qr_token(owner, card_id)
+        self.call(owner, f"/api/programs/{card_id}/archive", {"archived": True})
+        self.call(owner, f"/api/programs/{card_id}/qr", expected=409)
+        self.age_stamps()
+        self.call(customer, f"/api/card/{card_id}/scan", {"scan_token": token}, 410)
+        self.assertEqual(self.call(customer, "/api/places")["places"], [])
+        # The customer still gets what they earned.
+        self.call(customer, f"/api/card/{card_id}/redeem", {})
+        self.call(owner, f"/api/redemptions/{self.call(owner, '/api/dashboard')['redemptions'][0]['id']}/approve", {})
+        for _ in range(5):
+            self.new_card(owner)
+        self.call(owner, f"/api/programs/{card_id}/archive", {"archived": False}, 409)
+
+    def test_reward_types_and_editing_keep_the_stamp_goal(self):
+        owner = self.client()
+        card = self.open_business(owner, "owner", required=6)
+        for broken in ({"reward_type": "free", "reward_item": ""}, {"reward_type": "percent", "reward_amount": 3},
+                       {"reward_type": "percent", "reward_amount": 101}, {"reward_type": "amount", "reward_amount": 0},
+                       {"reward_type": "custom", "reward_title": " "}, {"reward_type": "bedava"}):
+            self.call(owner, f"/api/programs/{card['id']}", broken, 400)
+        self.new_card(owner, 1, 400)
+        self.assertEqual(card["title"], "6 damga topla, 1 kahve bedava")
+        edit = f"/api/programs/{card['id']}"
+        percent = self.call(owner, edit, {"reward_type": "percent", "reward_amount": 20, "stamps_required": 9})["program"]
+        self.assertEqual((percent["title"], percent["stamps_required"]), ("6 damga topla, %20 indirim kazan", 6))
+        amount = self.call(owner, edit, {"reward_type": "amount", "reward_amount": 50})["program"]
+        self.assertEqual(amount["title"], "6 damga topla, 50 ₺ indirim kazan")
+        custom = self.call(owner, edit, {"reward_type": "custom", "reward_title": "Doğum gününde pasta"})["program"]
+        self.assertEqual((custom["title"], custom["reward_amount"]), ("Doğum gününde pasta", 0))
 
 
 class GuestStampTest(ServerTest):
     def test_first_stamp_without_sign_in_then_saved_to_google(self):
         owner, other, guest = self.client(), self.client(), self.client()
-        slug = self.open_business(owner, "owner")["slug"]
-        other_slug = self.open_business(other, "other", "Diğer Kafe")["slug"]
-        first = self.call(guest, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)})
+        card_id = self.open_business(owner, "owner")["id"]
+        second_id = self.new_card(owner, 5)["id"]
+        other_id = self.open_business(other, "other", "Diğer Kafe")["id"]
+        first = self.scan(guest, owner, card_id)
         self.assertEqual((first["guest"], first["earned_reward"]), (True, False))
-        self.assertEqual(self.call(guest, f"/api/card/{slug}")["card"]["stamps"], 1)
-        self.assertEqual(len(self.call(guest, "/api/me")["cards"]), 1)
-        self.assertEqual(self.call(guest, "/api/places")["places"][1]["mine"]["stamps"], 1)
+        self.assertEqual(self.call(guest, f"/api/card/{card_id}")["card"]["stamps"], 1)
+        self.scan(guest, owner, second_id)  # another card of the same business is fine
+        self.assertEqual(len(self.call(guest, "/api/me")["cards"]), 2)
         self.assertEqual(self.call(owner, "/api/dashboard")["recent"][0]["customer"], "Misafir")
-        self.call(guest, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)}, 429)
+        self.scan(guest, owner, card_id, 429)
         # One business only while signed out; rewards always need the account.
-        self.call(guest, f"/api/card/{other_slug}/scan", {"scan_token": self.qr_token(other)}, 401)
-        self.call(guest, f"/api/card/{slug}/redeem", {}, 401)
+        self.scan(guest, other, other_id, 401)
+        self.call(guest, f"/api/card/{card_id}/redeem", {}, 401)
 
         self.login(guest, "cust")
         me = self.call(guest, "/api/me")
-        self.assertEqual((me["user"]["name"], [c["stamps"] for c in me["cards"]]), ("Test Kişi", [1]))
-        self.call(guest, f"/api/card/{other_slug}/scan", {"scan_token": self.qr_token(other)})
-        self.assertEqual(self.call(owner, "/api/dashboard")["recent"][0]["customer"], "Test K.")
+        self.assertEqual((me["user"]["name"], sorted(c["stamps"] for c in me["cards"])), ("Test Kişi", [1, 1]))
+        self.scan(guest, other, other_id)
+        self.assertEqual(self.call(other, "/api/dashboard")["recent"][0]["customer"], "Test K.")
 
     def test_guest_stamps_never_add_to_an_existing_card(self):
-        owner, phone = self.client(), self.client()
-        slug = self.open_business(owner, "owner")["slug"]
+        owner, phone, private_window = self.client(), self.client(), self.client()
+        card_id = self.open_business(owner, "owner")["id"]
         self.login(phone, "cust")
-        self.call(phone, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)})
-        private_window = self.client()
-        self.call(private_window, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)})
+        self.scan(phone, owner, card_id)
+        self.scan(private_window, owner, card_id)
         self.login(private_window, "cust")
-        self.assertEqual(self.call(private_window, f"/api/card/{slug}")["card"]["stamps"], 1)
+        self.assertEqual(self.call(private_window, f"/api/card/{card_id}")["card"]["stamps"], 1)
 
     def test_a_forged_guest_cookie_is_just_a_new_guest(self):
         owner, guest = self.client(), self.client()
-        slug = self.open_business(owner, "owner")["slug"]
+        card_id = self.open_business(owner, "owner")["id"]
         self.set_cookie(guest, "loyalty_customer", "made-up")
-        self.assertIsNone(self.call(guest, f"/api/card/{slug}")["card"])
-        self.call(guest, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)})
-        self.assertEqual(self.call(guest, f"/api/card/{slug}")["card"]["stamps"], 1)
+        self.assertIsNone(self.call(guest, f"/api/card/{card_id}")["card"])
+        self.scan(guest, owner, card_id)
+        self.assertEqual(self.call(guest, f"/api/card/{card_id}")["card"]["stamps"], 1)
 
 
 class ProfileAndMapTest(ServerTest):
-    def test_profile_rules_and_fixed_stamp_goal(self):
+    def test_profile_rules(self):
         owner = self.client()
         self.login(owner, "owner", intent="merchant")
-        base = {"business_name": "Kafe", "reward_title": "Kahve", "stamps_required": 5,
-                "category": "Kafe", "address": "Moda", "lat": 40.9, "lng": 29.0}
-        for broken in ({"lat": None}, {"lat": 0, "lng": 0}, {"lat": 91}, {"category": "Uzay"},
-                       {"stamps_required": 1}, {"business_name": "  "}):
+        base = {"business_name": "Kafe", "category": "Kafe", "address": "Moda", "lat": 40.9, "lng": 29.0}
+        for broken in ({"lat": None}, {"lat": 0, "lng": 0}, {"lat": 91}, {"category": "Uzay"}, {"business_name": "  "}):
             self.call(owner, "/api/merchant", {**base, **broken}, 400)
         created = self.call(owner, "/api/merchant", base)["merchant"]
-        updated = self.call(owner, "/api/merchant", {**base, "business_name": "Yeni Ad", "stamps_required": 9})["merchant"]
-        self.assertEqual((updated["slug"], updated["business_name"], updated["stamps_required"]),
-                         (created["slug"], "Yeni Ad", 5))
+        updated = self.call(owner, "/api/merchant", {**base, "business_name": "Yeni Ad"})["merchant"]
+        self.assertEqual((updated["slug"], updated["business_name"]), (created["slug"], "Yeni Ad"))
 
-    def test_reward_types_build_the_card_text(self):
-        owner = self.client()
-        self.login(owner, "owner", intent="merchant")
-        base = {"business_name": "Kafe", "stamps_required": 6, "category": "Kafe",
-                "address": "Moda", "lat": 40.9, "lng": 29.0}
-        for broken in ({"reward_type": "free", "reward_item": ""}, {"reward_type": "percent", "reward_amount": 3},
-                       {"reward_type": "percent", "reward_amount": 101}, {"reward_type": "amount", "reward_amount": 0},
-                       {"reward_type": "custom", "reward_title": " "}, {"reward_type": "bedava"}):
-            self.call(owner, "/api/merchant", {**base, **broken}, 400)
-        free = self.call(owner, "/api/merchant", {**base, "reward_type": "free", "reward_item": "1 kahve"})["merchant"]
-        self.assertEqual((free["reward_title"], free["reward_type"]), ("6 damga topla, 1 kahve bedava", "free"))
-        # The goal is fixed after creation, so the text keeps using 6 even if 9 is posted.
-        percent = self.call(owner, "/api/merchant", {**base, "stamps_required": 9, "reward_type": "percent",
-                                                     "reward_amount": 20, "reward_item": "unused"})["merchant"]
-        self.assertEqual((percent["reward_title"], percent["reward_item"]), ("6 damga topla, %20 indirim kazan", ""))
-        amount = self.call(owner, "/api/merchant", {**base, "reward_type": "amount", "reward_amount": 50})["merchant"]
-        self.assertEqual(amount["reward_title"], "6 damga topla, 50 ₺ indirim kazan")
-        custom = self.call(owner, "/api/merchant", {**base, "reward_type": "custom",
-                                                    "reward_title": "Doğum gününde pasta"})["merchant"]
-        self.assertEqual((custom["reward_title"], custom["reward_amount"]), ("Doğum gününde pasta", 0))
-
-    def test_map_lists_pinned_places_with_my_progress(self):
+    def test_map_lists_places_with_cards_and_my_progress(self):
         owner, customer, guest = self.client(), self.client(), self.client()
-        merchant = self.open_business(owner, "owner")
+        card_id = self.open_business(owner, "owner")["id"]
         self.sql("""INSERT INTO merchants(name,email,password_hash,business_name,slug,reward_title,stamps_required,
-          created_at) VALUES('x','nopin@example.com','','Pinsiz','pinsiz','Kahve',5,'2026-09-26')""")
-        self.login(customer, "cust", intent="card", slug=merchant["slug"], scan=self.qr_token(owner))
+          created_at,lat,lng) VALUES('x','nocard@example.com','','Kartsız','kartsiz','',5,'2026-09-26',41,29)""")
+        self.login(customer, "cust", intent="card", program=card_id, scan=self.qr_token(owner, card_id))
         places = self.call(guest, "/api/places")["places"]
         self.assertEqual([p["business_name"] for p in places], ["Nora Café"])
-        self.assertIsNone(places[0]["mine"])
-        mine = self.call(customer, "/api/places")["places"][0]["mine"]
+        self.assertIsNone(places[0]["programs"][0]["mine"])
+        mine = self.call(customer, "/api/places")["places"][0]["programs"][0]["mine"]
         self.assertEqual(mine, {"stamps": 1, "rewards_available": 0})
         self.call(guest, "/api/geocode?q=Moda", expected=401)
         self.call(customer, "/api/geocode?q=a", expected=400)
 
     def test_demo_is_seeded_once_and_only_shown_in_demo_mode(self):
-        from cheabby import config, demo
         self.call(self.client(), "/api/demo/login", {}, 404)
         demo.seed_demo()
         demo.seed_demo()
@@ -147,7 +190,9 @@ class ProfileAndMapTest(ServerTest):
         self.call(browser, "/api/demo/login", {})
         metrics = self.call(browser, "/api/dashboard")["metrics"]
         self.assertEqual((metrics["customers"], metrics["returning"], metrics["visits"]), (3, 2, 10))
-        self.assertEqual(len(self.call(browser, "/api/places")["places"]), len(demo.DEMO_PLACES))
+        self.assertEqual(len(self.call(browser, "/api/programs")["programs"]), 2)
+        places = self.call(browser, "/api/places")["places"]
+        self.assertEqual((len(places), sum(len(p["programs"]) for p in places)), (len(demo.DEMO_PLACES), 14))
 
     def test_static_files_and_security_headers(self):
         browser = self.client()
@@ -157,5 +202,5 @@ class ProfileAndMapTest(ServerTest):
             self.assertEqual(response.status, 200, path)
             self.assertIn("frame-ancestors 'none'", response.headers["Content-Security-Policy"])
             self.assertGreater(len(response.read()), 100, path)
-        self.assertEqual(self.open(browser, "/../cheabby/config.py").status, 404)
+        self.assertEqual(self.open(browser, "/../bikiyak/config.py").status, 404)
         self.assertEqual(self.open(browser, "/api/me").headers["Cache-Control"], "no-store")

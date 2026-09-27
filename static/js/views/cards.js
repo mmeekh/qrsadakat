@@ -26,9 +26,9 @@ defineView("cards", {
 
 function miniCard(card) {
   const theme = themeFor(card.category);
-  return h("button", { class: "mini-card", type: "button", onclick: () => go("card", { slug: card.slug }) },
+  return h("button", { class: "mini-card", type: "button", onclick: () => go("card", { id: card.program_id }) },
     h("div", { class: "place-head" }, h("span", { class: `place-icon pin-${theme.slug}` }, theme.icon),
-      h("div", {}, h("strong", {}, card.business_name), h("small", {}, card.reward_title))),
+      h("div", {}, h("strong", {}, card.business_name), h("small", {}, card.title))),
     stampDots(card.stamps, card.stamps_required),
     h("small", { class: "mini-card-foot" }, card.rewards_available
       ? `${card.rewards_available} ödül hazır` : `${card.stamps} / ${card.stamps_required} damga`));

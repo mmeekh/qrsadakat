@@ -1,10 +1,9 @@
-// Business profile: name, category, reward, stamp goal and the pin on the map.
+// Business profile: name, category and the pin on the map. Rewards are cards (program.js).
 import { api, signIn } from "../api.js";
 import { baseMap, loadLeaflet, locate, pinIcon } from "../map-kit.js";
 import { defineView, go } from "../nav.js";
 import { refreshMe, state } from "../state.js";
 import { $, h, toast } from "../ui.js";
-import { fillReward, rewardFields } from "./reward-picker.js";
 
 const form = $("setup-form");
 let L = null;
@@ -21,12 +20,8 @@ defineView("setup", {
     for (const field of ["business_name", "category", "address", "lat", "lng"]) {
       form[field].value = merchant?.[field] ?? (field === "category" ? "Kafe" : "");
     }
-    form.stamps_required.value = merchant?.stamps_required ?? 5;
-    form.stamps_required.disabled = Boolean(merchant);
-    $("stamps-hint").classList.toggle("hidden", !merchant);
-    fillReward(merchant);
     $("geocode-results").replaceChildren();
-    $("setup-submit").firstChild.textContent = merchant ? "Kaydet " : "Kartımı oluştur ";
+    $("setup-submit").firstChild.textContent = merchant ? "Kaydet " : "İşletmemi oluştur ";
     try { L = await loadLeaflet(); } catch (error) { return toast(error.message); }
     if (!map) {
       map = baseMap(L, $("setup-map"));
@@ -71,12 +66,11 @@ form.addEventListener("submit", async (event) => {
   if (!form.lat.value) return toast("Haritada işletmenin yerini seç.");
   $("setup-submit").disabled = true;
   try {
-    const body = { ...Object.fromEntries(new FormData(form).entries()), ...rewardFields() };
-    body.stamps_required = form.stamps_required.value;
-    await api("/api/merchant", { method: "POST", body });
+    const isNew = !state.me.merchant;
+    await api("/api/merchant", { method: "POST", body: Object.fromEntries(new FormData(form).entries()) });
     await refreshMe();
-    toast("Kaydedildi.");
-    await go("qr");
+    toast(isNew ? "İşletmen hazır. Şimdi ilk kartını oluştur." : "Kaydedildi.");
+    await go(isNew ? "program" : "programs");
   } catch (error) { toast(error.message); }
   finally { $("setup-submit").disabled = false; }
 });

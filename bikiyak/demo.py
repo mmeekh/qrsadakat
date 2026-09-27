@@ -1,4 +1,4 @@
-"""Demo mode (CHEABBY_DEMO_MODE=1): sample places and one-click access to Nora Café.
+"""Demo mode (BIKIYAK_DEMO_MODE=1): sample places and one-click access to Nora Café.
 Turn it off for a real launch; demo places then disappear from the map."""
 
 from __future__ import annotations
@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from . import config
 from .accounts import customer_for_user, start_session, upsert_user
 from .db import connect, utcnow, write
+from .programs import insert_program
 from .web import ApiError, Request, Response, Router
 
 DEMO_DOMAIN = "@mahalle.invalid"
@@ -52,11 +53,13 @@ DEMO_PLACES = (
     )
 )
 DEMO_CUSTOMERS = (("Elif Kaya", 3, 3, 0), ("Mert Aydın", 6, 1, 1), ("Zeynep Tunç", 1, 1, 0))
+# Nora Café shows that one business can run several cards.
+EXTRA_CARDS = {"nora-cafe-demo": (({"reward_type": "percent", "reward_item": "", "reward_amount": 20, "custom": ""}, 8),)}
 routes = Router()
 
 
 def seed_demo() -> None:
-    """Create sample places once; later runs only fill fields older pilots lacked."""
+    """Create sample places once; later runs only fill what older pilots lacked (owner, pin, cards)."""
     with closing(connect()) as db, write(db):
         for index, place in enumerate(DEMO_PLACES):
             owner_id = upsert_user(db, "demo:" + place["slug"], place["email"], "Demo İşletme", "")
@@ -67,6 +70,7 @@ def seed_demo() -> None:
                   address=CASE WHEN address='' THEN ? ELSE address END,
                   lat=COALESCE(lat,?), lng=COALESCE(lng,?) WHERE id=?""",
                            (owner_id, place["category"], place["address"], place["lat"], place["lng"], existing["id"]))
+                seed_cards(db, existing["id"], place)
                 continue
             merchant_id = db.execute("""INSERT INTO merchants(name,email,password_hash,business_name,slug,
               reward_title,stamps_required,created_at,user_id,category,address,lat,lng)
@@ -74,16 +78,28 @@ def seed_demo() -> None:
                 "Demo İşletme", place["email"], place["business"], place["slug"], place["reward"],
                 place["required"], utcnow(), owner_id, place["category"], place["address"],
                 place["lat"], place["lng"])).lastrowid
+            seed_cards(db, merchant_id, place)
             if index == 0:
                 seed_activity(db, merchant_id)
 
 
+def seed_cards(db, merchant_id: int, place: dict) -> None:
+    """Adds the place's cards it does not have yet, counted by position, so edits made
+    through the demo panel are not duplicated on restart."""
+    cards = ((({"reward_type": "custom", "reward_item": "", "reward_amount": 0, "custom": place["reward"]},
+               place["required"]),) + EXTRA_CARDS.get(place["slug"], ()))
+    have = db.execute("SELECT COUNT(*) FROM programs WHERE merchant_id=?", (merchant_id,)).fetchone()[0]
+    for reward, required in cards[have:]:
+        insert_program(db, merchant_id, reward, required)
+
+
 def seed_activity(db, merchant_id: int) -> None:
+    program = db.execute("SELECT id FROM programs WHERE merchant_id=? ORDER BY id LIMIT 1", (merchant_id,)).fetchone()
     for name, visits, stamps, available in DEMO_CUSTOMERS:
         user_id = upsert_user(db, "demo:customer:" + name, "musteri" + DEMO_DOMAIN, name, "")
-        card_id = db.execute("""INSERT INTO cards(merchant_id,customer_id,stamps,visits,rewards_available,created_at)
-          VALUES(?,?,?,?,?,?)""", (merchant_id, customer_for_user(db, user_id), stamps, visits,
-                                   available, utcnow())).lastrowid
+        card_id = db.execute("""INSERT INTO cards(program_id,merchant_id,customer_id,stamps,visits,rewards_available,
+          created_at) VALUES(?,?,?,?,?,?,?)""", (program["id"], merchant_id, customer_for_user(db, user_id), stamps,
+                                                  visits, available, utcnow())).lastrowid
         for step in range(visits):
             stamped = (datetime.now(timezone.utc) - timedelta(days=visits - step)).isoformat(timespec="seconds")
             db.execute("INSERT INTO visits(card_id,status,created_at,approved_at) VALUES(?,'approved',?,?)",

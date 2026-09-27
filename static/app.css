@@ -1,4 +1,4 @@
-/* App shell for the Cheabby screens. Colours come from the tokens in styles.css plus
+/* App shell for the bikıyak screens. Colours come from the tokens in styles.css plus
    the ones below, so a new theme only redefines :root. */
 :root{--surface:#fffefa;--surface-2:#e9efe4;--accent:#174f3a;--tab-h:66px;--radius:16px}
 
@@ -116,3 +116,19 @@
 .reward-option:has(input:checked){border-color:var(--accent);background:var(--surface-2)}
 .reward-preview{margin:6px 0 4px;font-size:13px;color:var(--muted)}
 .reward-preview b{color:var(--ink)}
+.place-programs{list-style:none;margin:12px 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.place-programs li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.place-programs b{display:block;font-size:14px}
+.place-programs small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.program-card{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid #e0e3da;border-radius:var(--radius);padding:14px}
+.program-open{display:flex;align-items:center;gap:12px;border:0;background:none;padding:0;text-align:left;color:var(--ink)}
+.program-text{flex:1}
+.program-text strong{display:block;font-size:16px}
+.program-text small{display:block;color:var(--muted);margin-top:3px}
+.program-qr{flex:none;border-radius:10px;background:var(--accent);color:#fff;font-weight:800;font-size:13px;padding:10px 12px}
+.program-card .text-button{align-self:flex-start;font-size:13px}
+.program-card.archived{opacity:.65}
+.archived-list:empty{display:none}
+.list-title{grid-column:1/-1;font-family:Georgia,serif;font-weight:400;font-size:22px;margin:8px 0 0}
+.qr-program{margin:-8px 0 16px;font-weight:800;color:var(--accent)}
+.qr-screen .back-link{align-self:flex-start}
