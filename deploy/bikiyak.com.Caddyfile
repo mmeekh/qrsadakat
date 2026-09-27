@@ -1,6 +1,18 @@
-# bikıyak.com (IDN; Caddy'ye punycode yazılır). DNS A kayıtları 136.243.228.36'ya
-# yönlenince /root/caddy/sites/ altına kopyalanır; Caddy sertifikayı kendi alır.
+# bikıyak.com — root-caddy site config (sunucuda /root/caddy/sites/bikiyak.com.Caddyfile).
+# IDN: Caddy'ye punycode yazılır (xn--bikyak-r9a.com = bikıyak.com).
+#
+# Cloudflare proxy (turuncu bulut) TLS'i edge'de sonlandırır; origin'de Caddy'nin iç
+# sertifikası yeterli (atjobfind.com ile aynı kurulum). Cloudflare SSL modu "Full" OLMALI:
+#   Flexible      -> CF origin'e HTTP ile gelir, Caddy https'e yönlendirir: sonsuz döngü.
+#   Full (strict) -> iç sertifika güvenilir sayılmaz: 525 hatası.
+
+www.xn--bikyak-r9a.com {
+	tls internal
+	redir https://xn--bikyak-r9a.com{uri} 308
+}
+
 xn--bikyak-r9a.com {
+	tls internal
 	encode zstd gzip
 	reverse_proxy qrsadakat-app:8088
 	header {
@@ -9,8 +21,4 @@ xn--bikyak-r9a.com {
 		Referrer-Policy "strict-origin-when-cross-origin"
 		X-Robots-Tag "noindex, nofollow"
 	}
-}
-
-www.xn--bikyak-r9a.com {
-	redir https://xn--bikyak-r9a.com{uri} permanent
 }

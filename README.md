@@ -141,27 +141,27 @@ docker compose -f deploy/compose.yml up -d app
 
 ## Alan adı: bikıyak.com
 
-Türkçe "ı" içerdiği için teknik adı (punycode) `xn--bikyak-r9a.com`; tarayıcı adres
-çubuğunda `bikıyak.com` görünür. Kayıt firmasının (ya da Cloudflare'in) DNS panelinde:
+**27 Eyl 2026'dan beri canlı.** Türkçe "ı" içerdiği için teknik adı (punycode)
+`xn--bikyak-r9a.com`; tarayıcıda `bikıyak.com` görünür. DNS Cloudflare'de:
 
-| Tür | Ad | Değer | Not |
+| Tür | Ad | Değer | Proxy |
 |---|---|---|---|
-| A | `@` | `136.243.228.36` | ana alan adı |
-| A | `www` | `136.243.228.36` | Caddy `www`'yu ana adrese yönlendirir |
+| A | `bikıyak.com` | `136.243.228.36` | Proxied (turuncu) |
+| CNAME | `www` | `bikıyak.com` | Proxied (turuncu) |
 
-- AAAA (IPv6) **ekleme**: sunucunun genel IPv6 adresi yok.
-- Cloudflare kullanılırsa kayıtlar ilk kurulumda **"DNS only" (gri bulut)** olmalı ki
-  Caddy Let's Encrypt sertifikasını alabilsin; sonra istenirse proxy açılıp SSL "Full (strict)".
-- TTL otomatik/300 yeterli. Yayılım genelde dakikalar, en fazla birkaç saat.
+- Cloudflare TLS'i kendi ucunda sonlandırır; sunucuda Caddy `tls internal` kullanır
+  (atjobfind.com ile aynı kurulum, `deploy/bikiyak.com.Caddyfile`).
+- Cloudflare **SSL/TLS modu "Full" olmalı.** Flexible sonsuz yönlendirme döngüsü, Full (strict)
+  525 hatası verir. Bu ayar değiştirilirse site kapanır.
+- AAAA kaydı yok: sunucunun genel IPv6 adresi yok.
+- `www` → ana adrese 308 yönlendirme. `qrsadakat.duckdns.org` şimdilik ayrıca açık.
 
-DNS yayılınca yapılacaklar (sunucu tarafı):
-1. `deploy/bikiyak.com.Caddyfile` → `/root/caddy/sites/`, `caddy validate` + `caddy reload`.
-2. `deploy/compose.yml` içinde `BIKIYAK_PUBLIC_URL: "https://xn--bikyak-r9a.com"`, kap yenilenir.
-3. Google OAuth istemcisinde yönlendirme adresi `https://xn--bikyak-r9a.com/auth/google/callback`.
-4. `qrsadakat.duckdns.org` bir süre açık kalır (eski bağlantılar için), sonra yeni adrese yönlendirilir.
+Google girişi açılırken: `BIKIYAK_PUBLIC_URL: "https://xn--bikyak-r9a.com"` ve OAuth istemcisinde
+yönlendirme adresi `https://xn--bikyak-r9a.com/auth/google/callback`. O zaman duckdns adresi
+bikıyak.com'a yönlendirilmeli; yoksa duckdns'ten başlayan giriş, çerez başka alan adında
+kaldığı için tamamlanamaz.
 
-Öneri: `bikiyak.com` (i ile) da alınıp buraya yönlendirilsin; klavyesinde "ı" olmayan ya
-da adı duyup yazan biri oraya gider.
+Öneri: `bikiyak.com` (i ile) da alınıp buraya yönlendirilsin.
 
 ## Temalı QR
 
