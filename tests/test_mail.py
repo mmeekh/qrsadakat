@@ -50,6 +50,8 @@ class WelcomeMailTest(ServerTest):
         self.assertIn("/?view=cards", document)
         self.assertIn("/gizlilik", document)
         self.assertIn("brand/mail-banner.jpg", document)
+        banner = self.open(self.client(), "/brand/mail-banner.jpg")  # the mail links to it: it must be served
+        self.assertEqual((banner.status, banner.headers.get_content_type()), (200, "image/jpeg"))
         original = mail.BANNER
         mail.BANNER = "brand/yok.jpg"
         try:
