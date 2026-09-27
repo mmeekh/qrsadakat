@@ -126,7 +126,7 @@ class ProfileAndMapTest(ServerTest):
         self.call(browser, "/api/demo/login", {})
         metrics = self.call(browser, "/api/dashboard")["metrics"]
         self.assertEqual((metrics["customers"], metrics["returning"], metrics["visits"]), (3, 2, 10))
-        self.assertEqual(len(self.call(browser, "/api/places")["places"]), 3)
+        self.assertEqual(len(self.call(browser, "/api/places")["places"]), len(demo.DEMO_PLACES))
 
     def test_static_files_and_security_headers(self):
         browser = self.client()

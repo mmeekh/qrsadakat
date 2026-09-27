@@ -24,6 +24,32 @@ DEMO_PLACES = (
     {"email": "demo-berber" + DEMO_DOMAIN, "business": "Usta Berber", "slug": "usta-berber-demo",
      "reward": "5 tıraş al, 6. tıraş bizden", "required": 5, "category": "Berber & kuaför",
      "address": "Osmanağa, Kadıköy / İstanbul", "lat": 40.98954, "lng": 29.02647},
+) + tuple(
+    # Fictional places across Turkey so the map shows every category; names are generic.
+    {"email": f"demo-{slug}{DEMO_DOMAIN}", "slug": f"{slug}-demo", "business": business, "category": category,
+     "reward": reward, "required": required, "address": address, "lat": lat, "lng": lng}
+    for slug, business, category, reward, required, address, lat, lng in (
+        ("kordon-kahve", "Kordon Kahve Evi", "Kafe", "6 kahve al, 1 kahve bizden", 6,
+         "Alsancak, Konak / İzmir", 38.43702, 27.14298),
+        ("ev-yemekleri", "Ev Yemekleri Lokantası", "Restoran", "8 öğle yemeği, 1 tatlı bizden", 8,
+         "Kızılay, Çankaya / Ankara", 39.92081, 32.85412),
+        ("mahalle-firini", "Mahalle Fırını", "Fırın & pastane", "10 simit al, 1 simit bizden", 10,
+         "Osmangazi / Bursa", 40.18852, 29.06103),
+        ("bereket-bakkal", "Bereket Bakkal", "Market", "10 alışveriş, 1 ekmek bizden", 10,
+         "Odunpazarı / Eskişehir", 39.76671, 30.52559),
+        ("makas-berber", "Makas Berber", "Berber & kuaför", "5 tıraş al, 6. tıraş bizden", 5,
+         "Muratpaşa / Antalya", 36.88413, 30.70561),
+        ("liman-cay", "Liman Çay Bahçesi", "Kafe", "7 çay al, 1 çay bizden", 7,
+         "Ortahisar / Trabzon", 41.00268, 39.71679),
+        ("kebap-kosesi", "Kebap Köşesi", "Restoran", "6 porsiyon, 1 künefe bizden", 6,
+         "Şahinbey / Gaziantep", 37.06622, 37.38331),
+        ("nergis-cicek", "Nergis Çiçekçilik", "Diğer", "5 buket al, 1 saksı çiçeği bizden", 5,
+         "Beşiktaş / İstanbul", 41.04302, 29.00697),
+        ("kitap-kafe", "Kitap Kafe", "Kafe", "5 kahve al, 1 kurabiye bizden", 5,
+         "Selçuklu / Konya", 37.87461, 32.49318),
+        ("taze-manav", "Taze Manav", "Market", "8 alışveriş, 1 kg meyve bizden", 8,
+         "Seyhan / Adana", 36.99142, 35.33083),
+    )
 )
 DEMO_CUSTOMERS = (("Elif Kaya", 3, 3, 0), ("Mert Aydın", 6, 1, 1), ("Zeynep Tunç", 1, 1, 0))
 routes = Router()
