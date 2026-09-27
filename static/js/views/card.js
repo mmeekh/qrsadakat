@@ -1,7 +1,8 @@
-// The customer's stamp card for one business. Reached by scanning the counter QR
-// (/?c=<slug>&s=<token>); a signed-out customer signs in with Google first.
+// The customer's stamp card for one business, reached by scanning the counter QR
+// (/?c=<slug>&s=<token>). The first stamp needs no sign-in; saving the card, a second
+// business and rewards need Google (rules in cheabby/loyalty.py and accounts.py).
 import { api, signIn, startLogin } from "../api.js";
-import { defineView } from "../nav.js";
+import { defineView, renderTabs } from "../nav.js";
 import { refreshMe, state } from "../state.js";
 import { $, googleButton, stampDots } from "../ui.js";
 
@@ -10,7 +11,13 @@ const STAMP_MESSAGES = {
   reward: "Harika! Ödülünü kullanabilirsin.",
   wait: "Bu kartın damgası zaten işlendi. Yeni damga için bir saat bekle.",
 };
+const GATES = {
+  save: ["Damgan bu telefonda duruyor. Kaybolmasın, ödülünü de kullanabilesin diye Google ile kaydet.", "Google ile kaydet"],
+  second: ["Başka bir işletmede de damga toplamak için Google ile giriş yap; damgan girişten hemen sonra işlenir.", "Google ile devam et"],
+  start: ["İlk damgan için kasadaki QR'ı okutman yeter, giriş gerekmez. Hesabın varsa giriş yap.", "Google ile giriş yap"],
+};
 let slug = null;
+let card = null;
 let effectTimer = null;
 
 defineView("card", {
@@ -19,13 +26,11 @@ defineView("card", {
     slug = next;
     history.replaceState({}, "", `/?c=${encodeURIComponent(slug)}`);
     status("");
-    if (scan && state.me.user) return scanNow(scan);
+    if (scan) return scanNow(scan);
     await load();
-    if (!state.me.user) await showGate(scan);
     if (stamp) {
       showEffect(stamp);
       status(STAMP_MESSAGES[stamp] || "");
-      refreshMe().catch(() => {});
     }
     if (login === "failed") status("Google girişi tamamlanamadı. Tekrar dene.");
   },
@@ -35,7 +40,8 @@ const status = (text) => { $("card-status").textContent = text; };
 
 async function load() {
   const data = await api(`/api/card/${encodeURIComponent(slug)}`);
-  const { merchant, card } = data;
+  const { merchant } = data;
+  card = data.card;
   $("customer-card").classList.toggle("cafe-photo", merchant.category === "Kafe");
   $("card-business").textContent = merchant.business_name;
   $("card-reward").textContent = merchant.reward_title;
@@ -45,29 +51,29 @@ async function load() {
   $("card-available").textContent = card ? `${card.rewards_available} ödül hazır` : "";
   $("card-progress-bar").style.width = `${100 * stamps / merchant.stamps_required}%`;
   $("card-id").textContent = card ? `Kart #${card.id}` : "";
-  $("card-gate").classList.toggle("hidden", Boolean(card));
   $("refresh-card").classList.toggle("hidden", !card);
   const redeem = $("redeem-button");
   redeem.classList.toggle("hidden", !card || card.rewards_available < 1);
   redeem.disabled = data.redemption_pending;
-  redeem.textContent = data.redemption_pending ? "Ödül onayı bekleniyor" : "Ödülümü kullan";
+  redeem.textContent = data.redemption_pending ? "Ödül onayı bekleniyor"
+    : state.me.user ? "Ödülümü kullan" : "Ödülünü almak için Google ile giriş yap";
   if (data.redemption_pending) status("Ödül teslimi işletme onayı bekliyor.");
+  if (state.me.user) $("card-gate").classList.add("hidden");
+  else showGate(card ? "save" : "start");
 }
 
-async function showGate(scan) {
-  $("gate-text").textContent = scan
-    ? "Damganı almak için Google ile devam et. Kartın hesabına kaydedilir, telefon değişse de kaybolmaz."
-    : "Kartını görmek için Google ile giriş yap.";
+function showGate(kind, scan) {
+  const [text, label] = GATES[kind];
+  $("gate-text").textContent = text;
   let url = null;
-  $("gate-action").replaceChildren(googleButton(scan ? "Google ile devam et" : "Google ile giriş yap",
-    () => (url ? (location.href = url) : signIn("card", { slug }))));
+  $("gate-action").replaceChildren(googleButton(label, () => (url ? (location.href = url) : signIn("card", { slug }))));
+  $("card-gate").classList.remove("hidden");
   if (!scan) return;
-  try {
-    // Started right away: the QR is checked while fresh, the stamp lands after sign-in.
-    const started = await startLogin("card", { slug, scan_token: scan });
+  // Started right away: the QR is checked while fresh, the stamp lands after sign-in.
+  startLogin("card", { slug, scan_token: scan }).then((started) => {
     url = started.url;
     if (!started.scan_ok) status("QR'ın süresi dolmuş. Giriş yaptıktan sonra kasadaki güncel QR'ı yeniden okut.");
-  } catch (error) { status(error.message); }
+  }).catch((error) => status(error.message));
 }
 
 async function scanNow(token) {
@@ -77,10 +83,11 @@ async function scanNow(token) {
     const kind = result.earned_reward ? "reward" : "ok";
     showEffect(kind);
     status(STAMP_MESSAGES[kind]);
-    refreshMe().catch(() => {});
+    refreshMe().then(renderTabs).catch(() => {});
   } catch (error) {
     await load();
-    status(error.message);
+    if (error.status === 401) showGate("second", token);
+    else status(error.message);
   }
 }
 
@@ -99,6 +106,7 @@ function showEffect(kind) {
 }
 
 $("redeem-button").addEventListener("click", async () => {
+  if (!state.me.user) return signIn("card", { slug }).catch((error) => status(error.message));
   $("redeem-button").disabled = true;
   try { await api(`/api/card/${encodeURIComponent(slug)}/redeem`, { method: "POST", body: {} }); await load(); }
   catch (error) { status(error.message); $("redeem-button").disabled = false; }

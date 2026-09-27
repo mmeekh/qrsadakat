@@ -13,6 +13,8 @@ from .db import utcnow
 from .web import ApiError, Request, Response, Router
 
 SESSION_COOKIE = "qr_session"
+# A signed-out customer's card; the first pilot used the same cookie, so its cards keep working.
+GUEST_COOKIE = "loyalty_customer"
 routes = Router()
 
 
@@ -35,6 +37,47 @@ def customer_for_user(db: sqlite3.Connection, user_id: int) -> int:
     # token_hash dates from browser-bound cards; a random value keeps the column unique.
     return db.execute("INSERT INTO customers(token_hash,user_id,created_at) VALUES(?,?,?)",
                       (digest(secrets.token_urlsafe(32)), user_id, utcnow())).lastrowid
+
+
+def guest_customer(req: Request) -> int | None:
+    token = req.cookie(GUEST_COOKIE)
+    if not token:
+        return None
+    row = req.db.execute("SELECT id FROM customers WHERE token_hash=? AND user_id IS NULL", (digest(token),)).fetchone()
+    return row["id"] if row else None
+
+
+def new_guest(req: Request, response: Response) -> int:
+    """Only the server holds the stamps; the cookie is a random key, so it cannot be edited into more."""
+    token = secrets.token_urlsafe(32)
+    req.set_cookie(response, GUEST_COOKIE, token, 365 * 86400)
+    return req.db.execute("INSERT INTO customers(token_hash,created_at) VALUES(?,?)",
+                          (digest(token), utcnow())).lastrowid
+
+
+def customer_of(req: Request, user: sqlite3.Row | None) -> int | None:
+    """The customer record behind this request, without creating one."""
+    if user is None:
+        return guest_customer(req)
+    row = req.db.execute("SELECT id FROM customers WHERE user_id=?", (user["id"],)).fetchone()
+    return row["id"] if row else None
+
+
+def adopt_guest(req: Request, response: Response, user_id: int) -> None:
+    """Call inside a write transaction. Guest stamps move to the account. Where the account
+    already has a card the guest card is left alone, never added up: private windows would
+    otherwise multiply stamps."""
+    guest = guest_customer(req)
+    if req.cookie(GUEST_COOKIE):
+        req.set_cookie(response, GUEST_COOKIE, "", 0)
+    if guest is None:
+        return
+    own = req.db.execute("SELECT id FROM customers WHERE user_id=?", (user_id,)).fetchone()
+    if not own:
+        req.db.execute("UPDATE customers SET user_id=? WHERE id=?", (user_id, guest))
+        return
+    req.db.execute("""UPDATE cards SET customer_id=? WHERE customer_id=? AND merchant_id NOT IN
+      (SELECT merchant_id FROM cards WHERE customer_id=?)""", (own["id"], guest, own["id"]))
 
 
 def start_session(req: Request, response: Response, user_id: int) -> None:
@@ -70,7 +113,7 @@ def short_name(name: str) -> str:
     """What a business sees of its customer: "Elif K."."""
     parts = name.split()
     if not parts:
-        return "Müşteri"
+        return "Misafir"
     return parts[0] if len(parts) == 1 else f"{parts[0]} {parts[-1][0]}."
 
 

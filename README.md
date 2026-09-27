@@ -15,15 +15,24 @@ Claude'a devredildi ve Cheabby adını aldı. Görsel tema demo içindir, deği�
    haritadaki yerini (adres araması, "konumumu kullan" veya haritaya dokunma) girer.
 2. **QR** sekmesi kategoriye göre temalı kasa QR'ını gösterir (kafe → kahve fincanı,
    fırın → ekmek, berber → berber direği...). Kod her dakika yenilenir, ekran açık kalır.
-3. Müşteri QR'ı okutur. Girişliyse damga hemen işlenir. Girişli değilse kart ekranında
-   "Google ile devam et" çıkar: QR o anda doğrulanır ve 10 dakika tutulur, Google'dan
-   dönünce damga işlenir (Google ekranı QR'ın 90 saniyelik ömründen uzun sürebilir).
+3. Müşteri QR'ı okutur; damga **girişsiz** hemen işlenir (misafir kartı). Hemen ardından
+   "Google ile kaydet" önerisi çıkar. Misafir kuralları:
+   - Damga sunucuda tutulur; telefonda yalnız rastgele bir anahtar çerezi (`loyalty_customer`,
+     HttpOnly, 1 yıl) vardır. Değiştirilen ya da uydurulan çerez yeni boş misafir olur.
+   - Girişsiz yalnız **bir işletme**. İkinci işletmede Google girişi istenir; QR o anda
+     doğrulanıp 10 dakika tutulur, Google'dan dönünce damga işlenir.
+   - **Ödül kullanmak** Google girişi ister.
+   - Girişte misafir kartı hesaba taşınır. Hesapta o işletmenin kartı zaten varsa iki
+     kart **toplanmaz** (gizli sekmeyle damga çoğaltmaya karşı).
+   - Çerez silinir ya da QR okuyucu uygulama kendi tarayıcısında açarsa kaydedilmemiş
+     misafir kartı kaybolur; ödülün girişe bağlı olmasının nedeni bu.
 4. Hedef dolunca müşteri "Ödülümü kullan" der, işletme panelde teslimi onaylar.
 5. **Harita** sekmesi bütün işletmeleri, müşterinin her birindeki damga durumunu ve
    Google Haritalar yol tarifi bağlantısını gösterir.
 
 Alt sekme çubuğu: işletme için QR · Panel · Harita · Kartlarım · Hesap; müşteri için
-Harita · Kartlarım · Hesap; girişsiz ziyaretçi için Keşfet · Harita · Giriş.
+Harita · Kartlarım · Hesap; kartı olan misafir için Harita · Kartlarım · Giriş; ilk kez
+gelen için Keşfet · Harita · Giriş.
 
 ## Mimari
 
@@ -141,7 +150,8 @@ Her sürüm bir öncekinin üzerine eklenir.
 | Süreli kasa QR'ı (dakikada yenilenir), müşteri kendi telefonuyla okutur | ✅ |
 | Otomatik damga + animasyon, ödül teslimi işletme onayıyla | ✅ |
 | Panel: damga alan müşteri, tekrar gelen müşteri, müşteri adı (Elif K.) | ✅ |
-| Google ile giriş (müşteri + işletme), kart hesaba bağlı, cihazlar arası | ✅ kod hazır, Google anahtarı bekleniyor |
+| Google ile giriş (müşteri + işletme), kart hesaba bağlı, cihazlar arası | ✅ kod canlıda, Google anahtarı bekleniyor |
+| Girişsiz ilk damga (misafir kartı, sonra Google ile kaydet) | ✅ |
 | Haritada Cheabby geçen yerler, damga durumum, yol tarifi | ✅ |
 | Kategoriye göre temalı QR | ✅ |
 | Mobil öncelikli arayüz, alt sekme çubuğu | ✅ |
@@ -150,9 +160,6 @@ Her sürüm bir öncekinin üzerine eklenir.
 | Kısa süreli anlık kampanyalar (ör. "18:00'e kadar 2 kat puan") | ⏳ |
 | Kartın telefon cüzdanına eklenmesi (Apple / Google Wallet) | ⏳ |
 | Yapay zekâ ile otomatik kurulum (ad/adres/foto → profil + ilk kampanya) | ⏳ |
-
-Açık karar: girişsiz ilk damga (misafir kartı, sonra Google ile kaydet). Kullanıcıyla
-konuşuldu, henüz kod yazılmadı.
 
 Başarı ölçütü: 10–20 işletmelik pilotta müşterilerin kartı **ikinci kez**
 kullanıp kullanmadığı (panelde "tekrar gelen").

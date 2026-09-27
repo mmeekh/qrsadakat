@@ -105,3 +105,5 @@
   .metrics{grid-template-columns:repeat(2,1fr)}
 }
 .leaflet-container .place-popup a.button{color:var(--ink)}
+.save-banner{grid-column:1/-1;background:#fff7e3;border:1px solid #ecd9a8;border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px}
+.save-banner p{margin:0;font-weight:700;line-height:1.5}

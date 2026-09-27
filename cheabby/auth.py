@@ -16,7 +16,8 @@ import urllib.request
 from urllib.parse import urlencode
 
 from . import config
-from .accounts import current_user, digest, public_user, start_session, upsert_user
+from .accounts import (adopt_guest, current_user, customer_for_user, customer_of, digest, public_user,
+                       start_session, upsert_user)
 from .db import write
 from .loyalty import apply_stamp, card_for, cards_of, valid_scan_token
 from .merchants import merchant_by_slug, merchant_of, public_merchant
@@ -120,7 +121,7 @@ def callback(req: Request) -> Response:
         if row["intent"] == "card" and row["scan_ok"]:
             merchant = merchant_by_slug(db, row["slug"])
             try:
-                earned = apply_stamp(db, merchant, card_for(db, merchant["id"], user_id))
+                earned = apply_stamp(db, merchant, card_for(db, merchant["id"], customer_for_user(db, user_id)))
                 response.location += "&stamp=" + ("reward" if earned else "ok")
             except ApiError:
                 response.location += "&stamp=wait"
@@ -144,13 +145,7 @@ def sign_in(req: Request, response: Response, claims: dict) -> int:
         # A business opened with e-mail and password in the first pilot joins its owner's account.
         db.execute("""UPDATE merchants SET user_id=? WHERE id=(SELECT id FROM merchants
           WHERE user_id IS NULL AND lower(email)=? LIMIT 1)""", (user_id, email))
-    legacy = req.cookie("loyalty_customer")
-    if legacy:
-        # Stamps collected with the first pilot's browser-bound card move to the account.
-        if not db.execute("SELECT 1 FROM customers WHERE user_id=?", (user_id,)).fetchone():
-            db.execute("UPDATE customers SET user_id=? WHERE token_hash=? AND user_id IS NULL",
-                       (user_id, digest(legacy)))
-        req.set_cookie(response, "loyalty_customer", "", 0)
+    adopt_guest(req, response, user_id)
     start_session(req, response, user_id)
     return user_id
 
@@ -158,8 +153,9 @@ def sign_in(req: Request, response: Response, claims: dict) -> int:
 @routes.get("/api/me")
 def me(req: Request) -> dict:
     user = current_user(req)
+    cards = cards_of(req.db, customer_of(req, user))
     if not user:
-        return {"user": None, "merchant": None, "cards": []}
+        # A guest sees their one card, with a prompt to save it to a Google account.
+        return {"user": None, "merchant": None, "cards": cards}
     merchant = merchant_of(req.db, user["id"])
-    return {"user": public_user(user), "merchant": public_merchant(merchant) if merchant else None,
-            "cards": cards_of(req.db, user["id"])}
+    return {"user": public_user(user), "merchant": public_merchant(merchant) if merchant else None, "cards": cards}

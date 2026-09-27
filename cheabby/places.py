@@ -9,7 +9,7 @@ import urllib.request
 from urllib.parse import urlencode
 
 from . import config
-from .accounts import current_user, require_user
+from .accounts import current_user, customer_of, require_user
 from .demo import DEMO_DOMAIN
 from .merchants import public_merchant
 from .web import ApiError, Request, Router
@@ -41,13 +41,12 @@ def geocode(query: str) -> list[dict]:
 
 @routes.get("/api/places")
 def places(req: Request) -> dict:
-    user = current_user(req)
+    customer = customer_of(req, current_user(req))
     hide_demo = "" if config.DEMO_MODE else f" AND m.email NOT LIKE '%{DEMO_DOMAIN}'"
     rows = req.db.execute(f"""SELECT m.*, c.stamps AS my_stamps, c.rewards_available AS my_rewards
-      FROM merchants m LEFT JOIN customers k ON k.user_id=?
-      LEFT JOIN cards c ON c.merchant_id=m.id AND c.customer_id=k.id
+      FROM merchants m LEFT JOIN cards c ON c.merchant_id=m.id AND c.customer_id=?
       WHERE m.lat IS NOT NULL AND m.lng IS NOT NULL{hide_demo} ORDER BY m.business_name""",
-                          (user["id"] if user else None,))
+                          (customer,))
     result = []
     for row in rows:
         place = public_merchant(row)

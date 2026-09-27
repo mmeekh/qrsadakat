@@ -34,17 +34,56 @@ class StampCardTest(ServerTest):
         metrics = self.call(owner, "/api/dashboard")["metrics"]
         self.assertEqual((metrics["customers"], metrics["returning"], metrics["visits"]), (1, 1, 2))
 
-    def test_signed_out_customers_and_non_owners_are_refused(self):
+    def test_non_owners_are_refused(self):
         owner, stranger = self.client(), self.client()
-        slug = self.open_business(owner, "owner")["slug"]
-        token = self.qr_token(owner)
-        self.call(stranger, f"/api/card/{slug}/scan", {"scan_token": token}, 401)
-        self.assertIsNone(self.call(stranger, f"/api/card/{slug}")["card"])
+        self.open_business(owner, "owner")
+        self.assertIsNone(self.call(stranger, "/api/card/" + self.call(owner, "/api/me")["merchant"]["slug"])["card"])
         self.call(stranger, "/api/merchant/qr", expected=401)
         self.login(stranger, "customer")
         self.call(stranger, "/api/merchant/qr", expected=403)
         self.call(stranger, "/api/dashboard", expected=403)
         self.call(stranger, "/api/card/unknown", expected=404)
+
+
+class GuestStampTest(ServerTest):
+    def test_first_stamp_without_sign_in_then_saved_to_google(self):
+        owner, other, guest = self.client(), self.client(), self.client()
+        slug = self.open_business(owner, "owner")["slug"]
+        other_slug = self.open_business(other, "other", "Diğer Kafe")["slug"]
+        first = self.call(guest, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)})
+        self.assertEqual((first["guest"], first["earned_reward"]), (True, False))
+        self.assertEqual(self.call(guest, f"/api/card/{slug}")["card"]["stamps"], 1)
+        self.assertEqual(len(self.call(guest, "/api/me")["cards"]), 1)
+        self.assertEqual(self.call(guest, "/api/places")["places"][1]["mine"]["stamps"], 1)
+        self.assertEqual(self.call(owner, "/api/dashboard")["recent"][0]["customer"], "Misafir")
+        self.call(guest, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)}, 429)
+        # One business only while signed out; rewards always need the account.
+        self.call(guest, f"/api/card/{other_slug}/scan", {"scan_token": self.qr_token(other)}, 401)
+        self.call(guest, f"/api/card/{slug}/redeem", {}, 401)
+
+        self.login(guest, "cust")
+        me = self.call(guest, "/api/me")
+        self.assertEqual((me["user"]["name"], [c["stamps"] for c in me["cards"]]), ("Test Kişi", [1]))
+        self.call(guest, f"/api/card/{other_slug}/scan", {"scan_token": self.qr_token(other)})
+        self.assertEqual(self.call(owner, "/api/dashboard")["recent"][0]["customer"], "Test K.")
+
+    def test_guest_stamps_never_add_to_an_existing_card(self):
+        owner, phone = self.client(), self.client()
+        slug = self.open_business(owner, "owner")["slug"]
+        self.login(phone, "cust")
+        self.call(phone, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)})
+        private_window = self.client()
+        self.call(private_window, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)})
+        self.login(private_window, "cust")
+        self.assertEqual(self.call(private_window, f"/api/card/{slug}")["card"]["stamps"], 1)
+
+    def test_a_forged_guest_cookie_is_just_a_new_guest(self):
+        owner, guest = self.client(), self.client()
+        slug = self.open_business(owner, "owner")["slug"]
+        self.set_cookie(guest, "loyalty_customer", "made-up")
+        self.assertIsNone(self.call(guest, f"/api/card/{slug}")["card"])
+        self.call(guest, f"/api/card/{slug}/scan", {"scan_token": self.qr_token(owner)})
+        self.assertEqual(self.call(guest, f"/api/card/{slug}")["card"]["stamps"], 1)
 
 
 class ProfileAndMapTest(ServerTest):

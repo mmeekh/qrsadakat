@@ -11,10 +11,10 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from . import config
-from .accounts import customer_for_user, require_user, short_name, current_user
+from .accounts import current_user, customer_for_user, guest_customer, new_guest, require_user, short_name
 from .db import utcnow, write
 from .merchants import merchant_by_slug, public_merchant, require_merchant
-from .web import ApiError, Request, Router
+from .web import ApiError, Request, Response, Router
 
 QR_SECRET = secrets.token_bytes(32)
 routes = Router()
@@ -39,8 +39,7 @@ def valid_scan_token(merchant_id: int, token: str) -> bool:
     return hmac.compare_digest(token, make_scan_token(merchant_id, slot))
 
 
-def card_for(db: sqlite3.Connection, merchant_id: int, user_id: int) -> sqlite3.Row:
-    customer_id = customer_for_user(db, user_id)
+def card_for(db: sqlite3.Connection, merchant_id: int, customer_id: int) -> sqlite3.Row:
     db.execute("INSERT OR IGNORE INTO cards(merchant_id,customer_id,created_at) VALUES(?,?,?)",
                (merchant_id, customer_id, utcnow()))
     return db.execute("SELECT * FROM cards WHERE merchant_id=? AND customer_id=?",
@@ -63,11 +62,19 @@ def apply_stamp(db: sqlite3.Connection, merchant: sqlite3.Row, card: sqlite3.Row
     return earned
 
 
-def cards_of(db: sqlite3.Connection, user_id: int) -> list[dict]:
+def cards_of(db: sqlite3.Connection, customer_id: int | None) -> list[dict]:
     return [dict(r) for r in db.execute("""SELECT m.slug, m.business_name, m.reward_title, m.stamps_required,
-      m.category, c.stamps, c.visits, c.rewards_available FROM cards c
-      JOIN customers k ON k.id=c.customer_id JOIN merchants m ON m.id=c.merchant_id
-      WHERE k.user_id=? AND (c.visits>0 OR c.rewards_available>0) ORDER BY c.id DESC""", (user_id,))]
+      m.category, c.stamps, c.visits, c.rewards_available FROM cards c JOIN merchants m ON m.id=c.merchant_id
+      WHERE c.customer_id=? AND (c.visits>0 OR c.rewards_available>0) ORDER BY c.id DESC""", (customer_id,))]
+
+
+def guest_card(req: Request, response: Response, merchant: sqlite3.Row) -> sqlite3.Row:
+    """A signed-out customer collects at one business; a second one needs Google sign-in."""
+    customer = guest_customer(req) or new_guest(req, response)
+    if req.db.execute("SELECT 1 FROM cards WHERE customer_id=? AND merchant_id<>? AND visits>0",
+                      (customer, merchant["id"])).fetchone():
+        raise ApiError(401, "Başka bir işletmede de damga toplamak için Google ile giriş yap; kartların hesabında birleşir.")
+    return card_for(req.db, merchant["id"], customer)
 
 
 @routes.get("/api/merchant/qr")
@@ -104,23 +111,30 @@ def dashboard(req: Request) -> dict:
 def view_card(req: Request) -> dict:
     merchant = merchant_by_slug(req.db, req.params["slug"])
     user = current_user(req)
-    if not user:
-        return {"merchant": public_merchant(merchant), "card": None, "redemption_pending": False}
-    with write(req.db) as db:
-        card = card_for(db, merchant["id"], user["id"])
-    pending = req.db.execute("SELECT 1 FROM redemptions WHERE card_id=? AND status='pending'", (card["id"],)).fetchone()
-    return {"merchant": public_merchant(merchant), "card": dict(card), "redemption_pending": bool(pending)}
+    if user:
+        with write(req.db) as db:
+            card = card_for(db, merchant["id"], customer_for_user(db, user["id"]))
+    else:
+        card = req.db.execute("SELECT * FROM cards WHERE merchant_id=? AND customer_id=?",
+                              (merchant["id"], guest_customer(req))).fetchone()
+    pending = card and req.db.execute("SELECT 1 FROM redemptions WHERE card_id=? AND status='pending'",
+                                      (card["id"],)).fetchone()
+    return {"merchant": public_merchant(merchant), "card": dict(card) if card else None,
+            "redemption_pending": bool(pending), "guest": user is None}
 
 
 @routes.post("/api/card/{slug}/scan")
-def scan(req: Request) -> dict:
-    user = require_user(req)
+def scan(req: Request) -> Response:
+    user = current_user(req)
     merchant = merchant_by_slug(req.db, req.params["slug"])
     if not valid_scan_token(merchant["id"], str(req.body.get("scan_token", ""))):
         raise ApiError(400, "QR süresi dolmuş. İşletmedeki güncel QR kodunu okut.")
+    response = Response()
     with write(req.db) as db:
-        earned = apply_stamp(db, merchant, card_for(db, merchant["id"], user["id"]))
-    return {"awarded": True, "earned_reward": earned}
+        card = card_for(db, merchant["id"], customer_for_user(db, user["id"])) if user else guest_card(req, response, merchant)
+        earned = apply_stamp(db, merchant, card)
+    response.body = {"awarded": True, "earned_reward": earned, "guest": user is None}
+    return response
 
 
 @routes.post("/api/card/{slug}/redeem")
@@ -128,7 +142,7 @@ def redeem(req: Request) -> dict:
     user = require_user(req)
     merchant = merchant_by_slug(req.db, req.params["slug"])
     with write(req.db) as db:
-        card = card_for(db, merchant["id"], user["id"])
+        card = card_for(db, merchant["id"], customer_for_user(db, user["id"]))
         if card["rewards_available"] < 1:
             raise ApiError(409, "Kullanılabilir ödül yok.")
         if db.execute("SELECT 1 FROM redemptions WHERE card_id=? AND status='pending'", (card["id"],)).fetchone():

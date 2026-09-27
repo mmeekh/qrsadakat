@@ -20,6 +20,7 @@ function tabs() {
     return [["qr", "QR"], ["dashboard", "Panel"], ["map", "Harita"], ["cards", "Kartlarım"], ["account", "Hesap"]];
   }
   if (state.me.user) return [["map", "Harita"], ["cards", "Kartlarım"], ["account", "Hesap"]];
+  if (state.me.cards.length) return [["map", "Harita"], ["cards", "Kartlarım"], ["account", "Giriş"]];
   return [["home", "Keşfet"], ["map", "Harita"], ["account", "Giriş"]];
 }
 
