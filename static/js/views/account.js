@@ -25,7 +25,8 @@ defineView("account", {
             : null,
         merchant ? h("button", { class: "button secondary full", type: "button", onclick: () => go("cards") },
           "Müşteri olarak kartlarım") : null,
-        h("button", { class: "button outline full", type: "button", onclick: logout }, "Çıkış yap")));
+        h("button", { class: "button outline full", type: "button", onclick: logout }, "Çıkış yap")),
+      h("a", { class: "text-button legal-link", href: "/gizlilik" }, "Gizlilik ve KVKK aydınlatma metni"));
   },
 });
 

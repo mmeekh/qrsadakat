@@ -173,12 +173,13 @@ adresi `https://xn--bikyak-r9a.com/auth/google/callback` olmalı.
 
 ## Gizlilik sayfası
 
-`docs/gizlilik-taslak.html` KVKK aydınlatma metni taslağıdır. Sistemin gerçekte işlediği veriler,
-3 çerez, aktarımlar (Google, Cloudflare, Hetzner/Almanya, OpenStreetMap/Nominatim) ve Google
-"Limited Use" beyanı yazılıdır. `[[...]]` alanları (veri sorumlusu, iletişim e-postası) doldurulunca
-`static/gizlilik.html` olarak yayına alınır; `/gizlilik` adresinden açılır (uzantısız adres desteği
-`web.static_files`'ta). Ana sayfaya bağlantısı ve Google marka doğrulamasındaki "Privacy policy"
-adresi de o zaman eklenir. Hukukçuya okutulması önerilir.
+`static/gizlilik.html` (`/gizlilik`, 27 Eyl 2026'dan beri yayında) KVKK aydınlatma metnidir. Sistemin
+gerçekte işlediği veriler, 3 çerez, aktarımlar (Google, Cloudflare, Hetzner/Almanya,
+OpenStreetMap/Nominatim) ve Google "Limited Use" beyanı yazılıdır. Veri sorumlusu olarak "bikıyak"
+ve iletişim olarak iletisim@bikıyak.com yazılı (kullanıcı kararı). Bu posta adresi Cloudflare Email
+Routing ile Gmail'e yönlenmeli; şirket kurulunca unvanla güncellenmeli. Hukukçuya okutulması
+önerilir. Ana sayfanın dipnotunda ve Hesap ekranında bağlantısı var. Veri işleyişi değişirse
+bu metin de güncellenmeli.
 
 ## Tema ve marka
 

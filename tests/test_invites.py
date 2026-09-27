@@ -53,3 +53,15 @@ class InviteTest(ServerTest):
         anyone = self.client()
         self.login(anyone, "anyone")
         self.call(anyone, "/api/merchant", PROFILE)
+
+
+class PrivacyPageTest(ServerTest):
+    def test_privacy_page_is_public_and_linked_from_home(self):
+        browser = self.client()
+        page = self.open(browser, "/gizlilik")
+        self.assertEqual(page.status, 200)
+        body = page.read().decode()
+        self.assertIn("KVKK", body)
+        self.assertIn("iletisim@xn--bikyak-r9a.com", body)
+        self.assertNotIn("[[", body)
+        self.assertIn('href="/gizlilik"', self.open(browser, "/").read().decode())
