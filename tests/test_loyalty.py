@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import urllib.error
+import urllib.request
+
 from bikiyak import config, demo, loyalty
 from tests.harness import ServerTest
 
@@ -202,6 +205,13 @@ class ProfileAndMapTest(ServerTest):
             self.assertEqual(response.status, 200, path)
             self.assertIn("frame-ancestors 'none'", response.headers["Content-Security-Policy"])
             self.assertGreater(len(response.read()), 100, path)
-        self.assertEqual(self.open(browser, "/fonts/sora-latin.woff2").headers["Content-Type"], "font/woff2")
+        font = self.open(browser, "/fonts/sora-latin.woff2")
+        self.assertEqual((font.headers["Content-Type"], font.headers["Cache-Control"]), ("font/woff2", "no-cache"))
+        request = urllib.request.Request(self.base + "/styles.css", headers={"If-None-Match": font.headers["ETag"]})
+        self.assertEqual(browser.open(request).status, 200)  # another file's tag does not match
+        etag = self.open(browser, "/styles.css").headers["ETag"]
+        with self.assertRaises(urllib.error.HTTPError) as unchanged:
+            browser.open(urllib.request.Request(self.base + "/styles.css", headers={"If-None-Match": etag}))
+        self.assertEqual(unchanged.exception.code, 304)
         self.assertEqual(self.open(browser, "/../bikiyak/config.py").status, 404)
         self.assertEqual(self.open(browser, "/api/me").headers["Cache-Control"], "no-store")

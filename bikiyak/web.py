@@ -3,6 +3,7 @@ feature modules only see Router, Request, Response and ApiError."""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import sqlite3
@@ -194,11 +195,21 @@ def make_handler(router: Router):
         def send_static(self, filename: str, mime: str) -> None:
             with open(filename, "rb") as source:
                 body = source.read()
-            self.send_response(200)
+            # Revalidate every time: HTML, scripts and styles change together on each deploy, and
+            # an edge or browser cache holding an old module would mix two versions. The ETag keeps
+            # an unchanged file down to a bodiless 304.
+            etag = '"' + hashlib.sha256(body).hexdigest()[:20] + '"'
+            fresh = etag in (self.headers.get("If-None-Match") or "")
+            self.send_response(304 if fresh else 200)
+            self.send_header("ETag", etag)
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            if fresh:
+                self.end_headers()
+                return
             self.send_header("Content-Type", mime)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Content-Security-Policy", CSP)
-            self.send_header("X-Content-Type-Options", "nosniff")
             self.end_headers()
             self.wfile.write(body)
 
