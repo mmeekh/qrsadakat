@@ -7,7 +7,12 @@ services:
       dockerfile: deploy/Dockerfile
     container_name: qrsadakat-app
     environment:
-      LOYALTY_DEMO_MODE: "1"
+      CHEABBY_DEMO_MODE: "1"
+      CHEABBY_PUBLIC_URL: "https://qrsadakat.duckdns.org"
+    # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET; without it Google sign-in stays off (demo still works).
+    env_file:
+      - path: /root/secrets/qrsadakat-google.env
+        required: false
     restart: unless-stopped
     read_only: true
     user: "10002:10002"

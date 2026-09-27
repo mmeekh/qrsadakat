@@ -2,62 +2,112 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#152a25">
-  <title>Mahalle Kartı — Müşterin yeniden gelsin</title>
+  <title>Cheabby — Müşterin yeniden gelsin</title>
   <link rel="stylesheet" href="/styles.css">
-  <script src="/qrcode.min.js" defer></script>
-  <script src="/app.js" defer></script>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/vendor/qrcode.min.js" defer></script>
+  <script type="module" src="/js/main.js"></script>
 </head>
 <body>
   <div class="shell">
     <header class="topbar">
-      <a id="brand-home" href="/" class="brand" aria-label="Mahalle Kartı ana sayfa"><span class="brand-icon">✳</span> mahalle<span>kartı</span></a>
-      <nav><button id="nav-home" class="nav-link" type="button">Ana sayfa</button><button id="nav-dashboard" class="nav-link hidden" type="button">İşletme paneli</button><button id="nav-logout" class="nav-link hidden" type="button">Çıkış</button></nav>
+      <a id="brand-home" href="/" class="brand" aria-label="Cheabby ana sayfa"><span class="brand-icon">✳</span> cheab<span>by</span></a>
+      <button id="top-account" class="avatar-button hidden" type="button" aria-label="Hesabım"></button>
     </header>
 
     <main>
-      <section id="home-view" class="view">
+      <section id="home-view" class="view hidden">
         <div class="hero-grid">
           <div class="hero-copy">
             <div class="eyebrow"><span class="eyebrow-dot"></span> Yerel işletmeler için dijital sadakat</div>
             <h1>Müşterin<br><em>yeniden gelsin.</em></h1>
             <p>Bir QR kodla sadakat kartı aç. Müşterin uygulama indirmeden damga biriktirsin, sen tekrar gelenleri gör.</p>
-            <div class="hero-actions"><button id="demo-button" class="button primary hidden" type="button">Hazır demoyu aç <span>↗</span></button><button id="start-button" class="button secondary" type="button">İşletmem için başla</button><button id="login-button" class="button secondary" type="button">Hesabım var</button></div>
-            <p class="footnote">Pilot sürüm · Kurulum ücretsiz · Kredi kartı gerekmez</p>
+            <div class="hero-actions">
+              <button id="demo-button" class="button primary hidden" type="button">Hazır demoyu aç <span>↗</span></button>
+              <button id="start-button" class="button secondary" type="button">İşletmem için başla</button>
+              <button id="explore-button" class="button secondary" type="button">Haritada keşfet</button>
+            </div>
+            <p class="footnote">Pilot sürüm · Google hesabınla giriş · Kurulum ücretsiz</p>
           </div>
           <div class="preview-card" aria-label="Sadakat kartı örneği">
-            <div class="preview-top"><span class="mini-logo">✳</span><span>MAHALLE KARTI</span></div>
+            <div class="preview-top"><span class="mini-logo">✳</span><span>CHEABBY</span></div>
             <div class="preview-business">Nora Café</div><div class="preview-reward">5 kahve al, 1 kahve bizden.</div>
             <div class="preview-stamps"><span class="stamp filled">✳</span><span class="stamp filled">✳</span><span class="stamp filled">✳</span><span class="stamp">✳</span><span class="stamp gift">✦</span></div>
             <div class="preview-bottom"><span>3 / 5 damga</span><span>SONRAKİ KAHVEYE AZ KALDI</span></div>
             <div class="float-note"><span>↗</span> Müşterinle bağ kur,<br> mahallende büyü.</div>
           </div>
         </div>
-        <div class="how"><div><b>01</b><h3>Kartını oluştur</h3><p>İşletme adını ve ödülünü seç.</p></div><div><b>02</b><h3>QR'ı göster</h3><p>Müşteri telefonuyla okutsun.</p></div><div><b>03</b><h3>Damga anında işlensin</h3><p>Tekrar gelen müşterini panelde gör.</p></div></div>
+        <div class="how"><div><b>01</b><h3>Kartını oluştur</h3><p>İşletmeni, ödülünü ve haritadaki yerini seç.</p></div><div><b>02</b><h3>QR'ı göster</h3><p>Müşteri kendi telefonuyla okutsun.</p></div><div><b>03</b><h3>Damga anında işlensin</h3><p>Tekrar gelen müşterini panelde gör.</p></div></div>
       </section>
 
-      <section id="auth-view" class="view hidden">
-        <div class="auth-layout"><div class="auth-intro"><div class="eyebrow">İŞLETMELER İÇİN</div><h1>Mahallende<br><em>yerini al.</em></h1><p>Dakikalar içinde sadakat kartını oluştur, QR kodunu müşterilerine göster.</p><div class="auth-mark">✳</div></div>
-          <div class="form-card"><button id="back-home" class="back-link" type="button">← Ana sayfaya dön</button><h2 id="auth-title">İşletmeni kaydet</h2><p id="auth-subtitle" class="muted">İlk sadakat kartını hemen oluşturalım.</p>
-            <form id="auth-form">
-              <div id="register-fields"><label>Adın<input name="name" autocomplete="name" maxlength="80" required placeholder="Örn. Ayşe"></label><label>İşletme adı<input name="business_name" maxlength="80" required placeholder="Örn. Nora Café"></label><label>Ödülün<input name="reward_title" maxlength="80" required placeholder="Örn. 5 kahve al, 1 kahve kazan"></label><label>Ödül için gereken damga<input name="stamps_required" type="number" min="2" max="20" value="5" required></label></div>
-              <label>E-posta<input name="email" type="email" autocomplete="email" required placeholder="sen@isletmen.com"></label><label>Şifre<input name="password" type="password" autocomplete="current-password" minlength="10" required placeholder="En az 10 karakter"></label>
-              <p id="auth-error" class="form-error hidden" role="alert"></p><button id="auth-submit" class="button primary full" type="submit">Kartımı oluştur <span>↗</span></button>
-            </form><button id="auth-toggle" class="text-button" type="button">Zaten hesabın var mı? Giriş yap</button>
-          </div>
+      <section id="setup-view" class="view hidden">
+        <div class="page-head"><div><div class="eyebrow">İŞLETME</div><h1 id="setup-title">İşletmeni ekle</h1><p>Müşterilerin seni haritada bu bilgilerle görür.</p></div></div>
+        <form id="setup-form" class="panel setup-form">
+          <label>İşletme adı<input name="business_name" maxlength="80" required placeholder="Örn. Nora Café"></label>
+          <label>Kategori<select name="category" required></select></label>
+          <label>Ödülün<input name="reward_title" maxlength="80" required placeholder="Örn. 5 kahve al, 1 kahve kazan"></label>
+          <label>Ödül için gereken damga<input name="stamps_required" type="number" min="2" max="20" value="5" required></label>
+          <p id="stamps-hint" class="muted hidden">Damga hedefi, açık kartlar bu hedefe göre ilerlediği için değiştirilemez.</p>
+          <label>Adres<span class="input-row"><input name="address" maxlength="160" required placeholder="Mahalle, sokak, ilçe"><button id="geocode-button" class="button secondary small" type="button">Haritada bul</button></span></label>
+          <div id="geocode-results" class="geocode-results"></div>
+          <div class="map-tools"><span id="pin-status" class="muted"></span><button id="setup-locate" class="text-button" type="button">Konumumu kullan</button></div>
+          <div id="setup-map" class="setup-map"></div>
+          <input name="lat" type="hidden"><input name="lng" type="hidden">
+          <button id="setup-submit" class="button primary full" type="submit">Kartımı oluştur <span>↗</span></button>
+        </form>
+      </section>
+
+      <section id="qr-view" class="view hidden">
+        <div class="qr-screen">
+          <div class="eyebrow">KASA QR'I</div>
+          <h1 id="qr-business">İşletmem</h1>
+          <div id="qr-stage" class="qr-stage"></div>
+          <p id="qr-countdown" class="qr-countdown" role="status">QR hazırlanıyor…</p>
+          <p class="qr-help">Müşterin kendi telefonunun kamerasıyla okutsun; damga anında işlenir. Kod her dakika yenilenir.</p>
         </div>
       </section>
 
       <section id="dashboard-view" class="view hidden">
-        <div class="page-head"><div><div class="eyebrow">İŞLETME PANELİ</div><h1 id="dashboard-title">İşletmem</h1><p>Sadakat kartın hazır. QR kodunu müşterilerine göster.</p></div><span class="pilot-badge"><span class="eyebrow-dot"></span> Pilot aktif</span></div>
-        <div class="dashboard-grid"><div class="qr-panel panel"><div class="panel-heading"><span class="panel-kicker">MÜŞTERİ GİRİŞİ</span><span class="circle-icon">↗</span></div><h2>QR kodun</h2><p>Kasada telefonundan göster. Müşteri okuttuğunda damga otomatik işlenir.</p><div id="qr-code" class="qr-code"></div><p id="qr-countdown" class="qr-countdown" role="status">QR hazırlanıyor…</p><p class="qr-help">Ekran açıkken kod her dakika yenilenir.</p></div>
-          <div class="dashboard-main"><div class="metrics"><div class="metric"><span>Ziyaret eden müşteri</span><strong id="metric-customers">0</strong></div><div class="metric"><span>Tekrar gelen</span><strong id="metric-returning">0</strong></div><div class="metric"><span>Onaylı ziyaret</span><strong id="metric-visits">0</strong></div><div class="metric"><span>Kullanılan ödül</span><strong id="metric-redeemed">0</strong></div></div><div class="panel request-panel"><div class="section-title"><div><span class="panel-kicker">OTOMATİK DAMGALAR</span><h2>Son ziyaretler</h2></div><button id="refresh-dashboard" class="refresh" type="button">Yenile ↻</button></div><div id="recent-list" class="request-list"></div></div><div class="panel request-panel"><div class="section-title"><div><span class="panel-kicker">ÖDÜLLER</span><h2>Ödül onayı</h2></div></div><div id="redemption-list" class="request-list"></div></div></div></div>
+        <div class="page-head"><div><div class="eyebrow">İŞLETME PANELİ</div><h1 id="dashboard-title">İşletmem</h1><p>Müşterilerinin ziyaretleri ve ödülleri.</p></div><span class="pilot-badge"><span class="eyebrow-dot"></span> Pilot aktif</span></div>
+        <div class="dashboard-body">
+          <button id="location-banner" class="location-banner hidden" type="button">Haritada görünmek için işletmenin konumunu ekle →</button>
+          <div class="metrics"><div class="metric"><span>Ziyaret eden müşteri</span><strong id="metric-customers">0</strong></div><div class="metric"><span>Tekrar gelen</span><strong id="metric-returning">0</strong></div><div class="metric"><span>Toplam damga</span><strong id="metric-visits">0</strong></div><div class="metric"><span>Kullanılan ödül</span><strong id="metric-redeemed">0</strong></div></div>
+          <div class="panel request-panel"><div class="section-title"><div><span class="panel-kicker">ÖDÜLLER</span><h2>Ödül onayı</h2></div></div><div id="redemption-list" class="request-list"></div></div>
+          <div class="panel request-panel"><div class="section-title"><div><span class="panel-kicker">OTOMATİK DAMGALAR</span><h2>Son ziyaretler</h2></div><button id="refresh-dashboard" class="refresh" type="button">Yenile ↻</button></div><div id="recent-list" class="request-list"></div></div>
+        </div>
       </section>
 
-      <section id="card-view" class="view hidden"><div class="customer-layout"><div class="customer-intro"><div class="eyebrow">DİJİTAL SADAKAT KARTIN</div><h1>Her ziyaret<br><em>bir adım daha.</em></h1><p>Kasadaki güncel QR kodunu okut; damgan hemen kartına işlensin.</p><div class="customer-note">Kartın bu tarayıcıya bağlı. Aynı telefondan geri geldiğinde kaldığın yerden devam edersin.</div></div><div id="customer-card" class="customer-card panel"><div class="customer-card-head"><span class="mini-logo">✳</span><span>MAHALLE KARTI</span></div><h2 id="card-business">İşletme</h2><p id="card-reward">Ödül</p><div id="card-stamps" class="card-stamps"></div><div class="progress-row"><span id="card-progress">0 / 5 damga</span><span id="card-available">0 ödül hazır</span></div><div class="progress-track"><div id="card-progress-bar"></div></div><p id="card-id" class="card-id">Kart #</p><div id="stamp-effect" class="stamp-effect hidden" role="status"><span class="stamp-effect-mark">✳</span><strong id="stamp-effect-title">Damga eklendi!</strong></div><button id="redeem-button" class="button secondary full hidden" type="button">Ödülümü kullan</button><p id="card-status" class="card-status" role="status"></p><button id="refresh-card" class="text-button" type="button">Kartı yenile ↻</button></div></div></section>
+      <section id="card-view" class="view hidden"><div class="customer-layout"><div class="customer-intro"><div class="eyebrow">DİJİTAL SADAKAT KARTIN</div><h1>Her ziyaret<br><em>bir adım daha.</em></h1><p>Kasadaki güncel QR kodunu okut; damgan hemen kartına işlensin.</p><div class="customer-note">Kartın Google hesabına bağlı; hangi telefondan girersen gir damgaların seninle.</div></div><div id="customer-card" class="customer-card panel"><div class="customer-card-head"><span class="mini-logo">✳</span><span>CHEABBY</span></div><h2 id="card-business">İşletme</h2><p id="card-reward">Ödül</p><div id="card-stamps" class="card-stamps"></div><div class="progress-row"><span id="card-progress">0 / 5 damga</span><span id="card-available"></span></div><div class="progress-track"><div id="card-progress-bar"></div></div><p id="card-id" class="card-id"></p><div id="stamp-effect" class="stamp-effect hidden" role="status"><span class="stamp-effect-mark">✳</span><strong id="stamp-effect-title">Damga eklendi!</strong></div><div id="card-gate" class="card-gate hidden"><p id="gate-text"></p><div id="gate-action"></div></div><button id="redeem-button" class="button secondary full hidden" type="button">Ödülümü kullan</button><p id="card-status" class="card-status" role="status"></p><button id="refresh-card" class="text-button" type="button">Kartı yenile ↻</button></div></div></section>
+
+      <section id="map-view" class="view hidden">
+        <div class="page-head compact"><div><div class="eyebrow">HARİTA</div><h1>Damga biriktirebileceğin yerler</h1></div><button id="locate-button" class="button secondary small" type="button">Konumumu göster</button></div>
+        <div id="map-canvas" class="map-canvas"></div>
+        <div id="place-list" class="place-list"></div>
+      </section>
+
+      <section id="cards-view" class="view hidden">
+        <div class="page-head compact"><div><div class="eyebrow">CÜZDAN</div><h1>Kartlarım</h1></div></div>
+        <div id="cards-list" class="cards-list"></div>
+      </section>
+
+      <section id="account-view" class="view hidden">
+        <div class="page-head compact"><div><div class="eyebrow">HESAP</div><h1>Hesabım</h1></div></div>
+        <div id="account-body" class="account-body"></div>
+      </section>
     </main>
-    <footer><span>✳ mahallekartı</span><span>Yerel bağlar, tekrar gelen müşteriler.</span><span>2026 · Pilot sürüm</span></footer>
+    <footer><span>✳ cheabby</span><span>Yerel bağlar, tekrar gelen müşteriler.</span><span>2026 · Pilot sürüm</span></footer>
   </div>
+
+  <nav id="tabbar" class="tabbar" aria-label="Ana menü"></nav>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <template id="google-button-template">
+    <button class="google-button" type="button">
+      <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      <span>Google ile devam et</span>
+    </button>
+  </template>
 </body>
 </html>

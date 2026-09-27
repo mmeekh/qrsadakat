@@ -1,6 +1,9 @@
-*.sqlite3
+.git
+.work
+tests
+deploy
+*.sqlite3*
 __pycache__/
 *.pyc
-test_server.py
 README.md
 QR-LICENSE
