@@ -1,0 +1,13 @@
+[Unit]
+Description=Refresh qrsadakat DuckDNS record
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/python3 /root/projects/qrsadakat/deploy/update_duckdns.py
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true

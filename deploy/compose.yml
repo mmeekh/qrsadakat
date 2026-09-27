@@ -1,0 +1,38 @@
+name: qrsadakat
+
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: qrsadakat-app
+    environment:
+      LOYALTY_DEMO_MODE: "1"
+    restart: unless-stopped
+    read_only: true
+    user: "10002:10002"
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 100
+    mem_limit: 256m
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    volumes:
+      - qrsadakat_data:/data
+    expose:
+      - "8088"
+    networks:
+      - web
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8088/', timeout=3).read(1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  qrsadakat_data:
+
+networks:
+  web:
+    external: true

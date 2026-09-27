@@ -1,0 +1,14 @@
+# Canlı kopya /root/caddy/sites/qrsadakat.duckdns.org.Caddyfile; parola özeti depoya konmaz.
+qrsadakat.duckdns.org {
+	basic_auth {
+		admin <bcrypt-hash: caddy hash-password>
+	}
+	encode zstd gzip
+	reverse_proxy qrsadakat-app:8088
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		X-Robots-Tag "noindex, nofollow"
+	}
+}
