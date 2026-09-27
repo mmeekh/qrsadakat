@@ -123,15 +123,15 @@ girilince hesaba taşınır.
 
 ## Canlı ortam
 
-`https://qrsadakat.duckdns.org`: Caddy (`/root/caddy/sites/qrsadakat.duckdns.org.Caddyfile`)
-`qrsadakat-app:8088` konteynerine yönlendirir. Site herkese açık; 27 Eyl 2026'da Basic Auth
-kaldırıldı (eski dosyanın yedeği `/root/backups/qrsadakat/`). `X-Robots-Tag: noindex` duruyor,
-arama motorları pilotu dizine eklemez. Demo modu açıkken "Hazır demoyu aç" düğmesiyle herkes
-Nora Café panelini görebilir ve demo ödüllerini onaylayabilir; bu yalnız demo verisidir.
+`https://bikıyak.com`: Cloudflare → Caddy (`/root/caddy/sites/bikiyak.com.Caddyfile`) →
+`qrsadakat-app:8088` konteyneri. Site herkese açık (Basic Auth 27 Eyl 2026'da kaldırıldı);
+`X-Robots-Tag: noindex` duruyor, arama motorları pilotu dizine eklemez. Demo modu açıkken
+"Hazır demoyu aç" ile herkes Nora Café panelini görebilir; bu yalnız demo verisidir.
 
-DuckDNS anahtarı `/root/secrets/qrsadakat-duckdns-token`; `qrsadakat-duckdns.timer`
-beş dakikada bir `deploy/update_duckdns.py` çalıştırır. Veri `qrsadakat_qrsadakat_data`
-biriminde (`/data/pilot.sqlite3`); göçler açılışta kendiliğinden çalışır.
+DuckDNS anahtarı `/root/secrets/qrsadakat-duckdns-token`; `qrsadakat-duckdns.timer` beş
+dakikada bir `deploy/update_duckdns.py` çalıştırır (eski adresin yönlendirmesi için).
+Veri `qrsadakat_qrsadakat_data` biriminde (`/data/pilot.sqlite3`); göçler açılışta
+kendiliğinden çalışır. Tablo yeniden kuran göçlerden önce `/data` yedeklenir.
 
 ```bash
 ./deploy/test-in-image.sh
@@ -154,12 +154,11 @@ docker compose -f deploy/compose.yml up -d app
 - Cloudflare **SSL/TLS modu "Full" olmalı.** Flexible sonsuz yönlendirme döngüsü, Full (strict)
   525 hatası verir. Bu ayar değiştirilirse site kapanır.
 - AAAA kaydı yok: sunucunun genel IPv6 adresi yok.
-- `www` → ana adrese 308 yönlendirme. `qrsadakat.duckdns.org` şimdilik ayrıca açık.
+- `www` → ana adrese 308 yönlendirme. Eski `qrsadakat.duckdns.org` 27 Eyl 2026'dan beri her isteği
+  bikıyak.com'a 308 ile yönlendirir (`deploy/Caddyfile`); DuckDNS zamanlayıcısı bu yüzden açık kalır.
 
-Google girişi açılırken: `BIKIYAK_PUBLIC_URL: "https://xn--bikyak-r9a.com"` ve OAuth istemcisinde
-yönlendirme adresi `https://xn--bikyak-r9a.com/auth/google/callback`. O zaman duckdns adresi
-bikıyak.com'a yönlendirilmeli; yoksa duckdns'ten başlayan giriş, çerez başka alan adında
-kaldığı için tamamlanamaz.
+`BIKIYAK_PUBLIC_URL` = `https://xn--bikyak-r9a.com`; Google OAuth istemcisindeki yönlendirme
+adresi `https://xn--bikyak-r9a.com/auth/google/callback` olmalı.
 
 Öneri: `bikiyak.com` (i ile) da alınıp buraya yönlendirilsin.
 

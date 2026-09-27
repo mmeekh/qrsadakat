@@ -8,7 +8,7 @@ services:
     container_name: qrsadakat-app
     environment:
       BIKIYAK_DEMO_MODE: "1"
-      BIKIYAK_PUBLIC_URL: "https://qrsadakat.duckdns.org"
+      BIKIYAK_PUBLIC_URL: "https://xn--bikyak-r9a.com"
     # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET; without it Google sign-in stays off (demo still works).
     env_file:
       - path: /root/secrets/qrsadakat-google.env

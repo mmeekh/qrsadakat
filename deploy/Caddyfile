@@ -1,12 +1,4 @@
-# Canlı kopya: /root/caddy/sites/qrsadakat.duckdns.org.Caddyfile
-# Basic Auth 27 Eyl 2026'da kaldırıldı (müşteri QR'dan doğrudan gelir).
+# Eski pilot adresi: 27 Eyl 2026'dan beri her istek bikıyak.com'a kalıcı yönlendirilir.
 qrsadakat.duckdns.org {
-	encode zstd gzip
-	reverse_proxy qrsadakat-app:8088
-	header {
-		Strict-Transport-Security "max-age=31536000"
-		X-Content-Type-Options "nosniff"
-		Referrer-Policy "strict-origin-when-cross-origin"
-		X-Robots-Tag "noindex, nofollow"
-	}
+	redir https://xn--bikyak-r9a.com{uri} 308
 }
