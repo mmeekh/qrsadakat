@@ -295,3 +295,13 @@ footer{display:none}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.stamp-effect.play{opacity:1}
   .stamp-effect.play .stamp-effect-mark,.stamp-effect.play strong{opacity:1;transform:none}}
+
+/* 404 page (static/404.html) */
+.not-found{padding-bottom:40px}
+.not-found-body{display:flex;flex-direction:column;align-items:center;gap:20px;padding-top:28px}
+.not-found-pass{width:100%;max-width:440px}
+.not-found-pass .pass-head{text-transform:none;letter-spacing:0;font-size:15px;opacity:1}
+.not-found-pass .pass-head strong{font-family:var(--font-display);font-size:28px;font-weight:800}
+.not-found-pass h1{font-size:28px;font-weight:800;margin-top:22px}
+.not-found-pass p{margin-top:8px;opacity:.92;font-weight:500}
+.not-found-actions{display:flex;flex-direction:column;gap:10px;width:100%;max-width:440px}

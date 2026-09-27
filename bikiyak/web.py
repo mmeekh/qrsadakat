@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import pathlib
 import re
 import sqlite3
 from http.cookies import SimpleCookie
@@ -124,12 +125,26 @@ class Router:
         return None
 
 
-def static_files() -> dict[str, tuple[str, str]]:
-    """Only files that exist on disk under static/ are served; nothing is resolved from the URL."""
+def static_files() -> dict[str, tuple[bytes, str, str]]:
+    """Loads static/ once at start. Only files that exist there are served; nothing is resolved
+    from the URL. Returns {url path: (body, mime type, etag)}.
+
+    Every reference to a stylesheet, script or manifest (in HTML, and module imports in scripts)
+    gets ?v=<hash of all static files>, so each deploy changes every URL and no browser or edge
+    cache can mix an old module with new ones."""
+    paths = sorted(p for p in config.STATIC_DIR.rglob("*") if p.is_file() and p.suffix in MIME)
+    raw = {"/" + p.relative_to(config.STATIC_DIR).as_posix(): p.read_bytes() for p in paths}
+    version = hashlib.sha256(b"".join(k.encode() + v for k, v in raw.items())).hexdigest()[:10]
+    html_ref = re.compile(r'((?:href|src)=")(/[^"?#]+\.(?:css|js|webmanifest))(")')
+    js_import = re.compile(r'((?:from|import)\s*")(\.{1,2}/[^"?]+\.js)(")')
     files = {}
-    for path in config.STATIC_DIR.rglob("*"):
-        if path.is_file() and path.suffix in MIME:
-            files["/" + path.relative_to(config.STATIC_DIR).as_posix()] = (str(path), MIME[path.suffix])
+    for path, body in raw.items():
+        if path.endswith(".html"):
+            body = html_ref.sub(lambda m: f"{m[1]}{m[2]}?v={version}{m[3]}", body.decode()).encode()
+        elif path.endswith(".js") and not path.startswith("/vendor/"):
+            body = js_import.sub(lambda m: f"{m[1]}{m[2]}?v={version}{m[3]}", body.decode()).encode()
+        etag = '"' + hashlib.sha256(body).hexdigest()[:20] + '"'
+        files[path] = (body, MIME[pathlib.PurePath(path).suffix], etag)
     files["/"] = files["/index.html"]
     return files
 
@@ -157,6 +172,8 @@ def make_handler(router: Router):
             request = None
             try:
                 found = router.match(self.command, path)
+                if not found and self.command == "GET" and not path.startswith(("/api/", "/auth/")):
+                    return self.send_static(*files["/404.html"], status=404)
                 if not found:
                     raise ApiError(404, "Bulunamadı.")
                 request = Request(self, found[1])
@@ -192,15 +209,11 @@ def make_handler(router: Router):
             self.end_headers()
             self.wfile.write(body)
 
-        def send_static(self, filename: str, mime: str) -> None:
-            with open(filename, "rb") as source:
-                body = source.read()
-            # Revalidate every time: HTML, scripts and styles change together on each deploy, and
-            # an edge or browser cache holding an old module would mix two versions. The ETag keeps
-            # an unchanged file down to a bodiless 304.
-            etag = '"' + hashlib.sha256(body).hexdigest()[:20] + '"'
-            fresh = etag in (self.headers.get("If-None-Match") or "")
-            self.send_response(304 if fresh else 200)
+        def send_static(self, body: bytes, mime: str, etag: str, status: int = 200) -> None:
+            # Revalidate every time (versioned URLs do the cache busting); the ETag keeps an
+            # unchanged file down to a bodiless 304.
+            fresh = status == 200 and etag in (self.headers.get("If-None-Match") or "")
+            self.send_response(304 if fresh else status)
             self.send_header("ETag", etag)
             self.send_header("Cache-Control", "no-cache")
             self.send_header("X-Content-Type-Options", "nosniff")

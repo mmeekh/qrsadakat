@@ -197,6 +197,28 @@ class ProfileAndMapTest(ServerTest):
         places = self.call(browser, "/api/places")["places"]
         self.assertEqual((len(places), sum(len(p["programs"]) for p in places)), (len(demo.DEMO_PLACES), 14))
 
+    def test_asset_urls_carry_the_deploy_version(self):
+        browser = self.client()
+        page = self.open(browser, "/").read().decode()
+        version = page.split("/styles.css?v=")[1][:10]
+        self.assertIn(f'src="/js/main.js?v={version}"', page)
+        main = self.open(browser, "/js/main.js").read().decode()
+        self.assertIn(f'from "./nav.js?v={version}"', main)
+        self.assertIn(f'import "./views/programs.js?v={version}"', main)
+        self.assertIn(f'from "../api.js?v={version}"', self.open(browser, "/js/views/card.js").read().decode())
+        self.assertEqual(self.open(browser, f"/styles.css?v={version}").status, 200)
+        self.assertNotIn("?v=", self.open(browser, "/vendor/qrcode.min.js").read().decode()[:2000])
+
+    def test_unknown_pages_get_the_404_page_and_unknown_api_gets_json(self):
+        browser = self.client()
+        for path in ("/yok", "/js/yok.js", "/kart/123"):
+            response = self.open(browser, path)
+            self.assertEqual((response.status, response.headers.get_content_type()), (404, "text/html"), path)
+            self.assertIn("Bu sayfa kıyak yapamadı.", response.read().decode())
+        api = self.open(browser, "/api/yok")
+        self.assertEqual((api.status, api.headers.get_content_type()), (404, "application/json"))
+        self.assertEqual(self.call(browser, "/api/card/999", expected=404)["error"], "Kart bulunamadı.")
+
     def test_static_files_and_security_headers(self):
         browser = self.client()
         for path in ("/", "/js/main.js", "/styles.css", "/vendor/qrcode.min.js", "/vendor/leaflet/leaflet.js",
