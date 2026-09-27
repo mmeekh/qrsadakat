@@ -34,7 +34,8 @@ export function googleButton(label, onClick) {
 export function stampDots(stamps, required) {
   return h("div", { class: "card-stamps" }, Array.from({ length: required }, (_, i) => {
     const last = i === required - 1;
-    return h("span", { class: `stamp ${i < stamps ? "filled" : last ? "gift" : ""}` }, last ? "✦" : "✳");
+    const filled = i < stamps;
+    return h("span", { class: `stamp ${filled ? "filled" : last ? "gift" : ""}` }, filled ? "✓" : last ? "✦" : "");
   }));
 }
 

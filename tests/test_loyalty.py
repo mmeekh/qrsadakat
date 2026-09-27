@@ -197,10 +197,11 @@ class ProfileAndMapTest(ServerTest):
     def test_static_files_and_security_headers(self):
         browser = self.client()
         for path in ("/", "/js/main.js", "/styles.css", "/vendor/qrcode.min.js", "/vendor/leaflet/leaflet.js",
-                     "/cafe-card-bg.webp"):
+                     "/fonts/sora-latin.woff2", "/manifest.webmanifest", "/brand/icon-192.png"):
             response = self.open(browser, path)
             self.assertEqual(response.status, 200, path)
             self.assertIn("frame-ancestors 'none'", response.headers["Content-Security-Policy"])
             self.assertGreater(len(response.read()), 100, path)
+        self.assertEqual(self.open(browser, "/fonts/sora-latin.woff2").headers["Content-Type"], "font/woff2")
         self.assertEqual(self.open(browser, "/../bikiyak/config.py").status, 404)
         self.assertEqual(self.open(browser, "/api/me").headers["Cache-Control"], "no-store")

@@ -77,7 +77,7 @@ async function loadDashboard() {
   fillList($("recent-list"), data.recent, "Henüz damga yok. Kartlarım'dan bir karta dokun, QR'ı kasada göster.", (item) => [
     h("div", {}, h("strong", {}, `${item.customer} · Damga işlendi`),
       h("small", {}, `${new Date(item.approved_at).toLocaleString("tr-TR")} · ${item.visits}. ziyaret · ${item.program}`)),
-    h("span", { class: "recent-stamp" }, "✳")]);
+    h("span", { class: "recent-stamp" }, "✓")]);
   fillList($("redemption-list"), data.redemptions, "Henüz kullanılmayı bekleyen ödül yok.", (item) => [
     h("div", {}, h("strong", {}, item.customer), h("small", {}, `${new Date(item.created_at).toLocaleString("tr-TR")} · Verilecek: ${item.program}`)),
     h("button", { type: "button", onclick: (event) => approve(event.currentTarget, item.id) }, "Ödülü teslim ettim")]);

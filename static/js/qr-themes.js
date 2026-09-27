@@ -14,8 +14,8 @@ export const THEMES = {
     paper: "#fbfff8", body: "#5e9e5a", trim: "#3f7a3e", soft: "#2c5a31", label: "#f4fff0" },
   "Berber & kuaför": { slug: "berber", icon: "✂️", frame: "pole", dot: "square", eye: "square", ink: "#1b2742", eyeInk: "#111a30",
     paper: "#fbfcff", body: "#24345a", trim: "#c8363a", soft: "#2f58a8", label: "#eef2ff" },
-  "Diğer": { slug: "diger", icon: "✳", frame: "card", dot: "square", eye: "square", ink: "#174f3a", eyeInk: "#0f3526",
-    paper: "#fffefa", body: "#24583f", trim: "#163829", soft: "#a8cbaa", label: "#f4f2e8" },
+  "Diğer": { slug: "diger", icon: "✦", frame: "card", dot: "square", eye: "square", ink: "#0B1433", eyeInk: "#0B1433",
+    paper: "#FFFFFF", body: "#2447F5", trim: "#1B38D6", soft: "#FFC933", label: "#FFFFFF" },
 };
 
 export const themeFor = (category) => THEMES[category] || THEMES["Diğer"];
@@ -153,7 +153,7 @@ export function renderThemedQr(target, text, category, label) {
   drawCode(node("g", {}, svg), qr, theme, ...layout.code);
   const [x, y, size] = layout.label;
   const caption = node("text", { x, y, "font-size": size, fill: theme.label, "text-anchor": "middle",
-    "font-family": "Georgia, 'Times New Roman', serif" }, svg);
+    "font-family": "Sora, 'Plus Jakarta Sans', sans-serif", "font-weight": 700 }, svg);
   caption.textContent = `${theme.icon} ${label.length > 26 ? label.slice(0, 25) + "…" : label}`;
   svg.setAttribute("viewBox", layout.box.map(n3).join(" "));
   target.replaceChildren(svg);

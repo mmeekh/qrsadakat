@@ -8,7 +8,7 @@ girer. Harita, bikıyak geçen bütün işletmeleri gösterir.
 Depo: `git@github.com:mmeekh/qrsadakat.git`. 25-26 Eyl 2026'da Codex ile "Mahalle Kartı"
 adıyla başladı (jobfind deposunda izlenmeyen `loyalty_v1/` klasörü), 27 Eyl 2026'da
 Claude'a devredildi; aynı gün önce "Cheabby", sonra **bikıyak** adını aldı (alan adı
-`bikıyak.com`, teknik adı `xn--bikyak-r9a.com`). Görsel tema demo içindir, değişecek.
+`bikıyak.com`, teknik adı `xn--bikyak-r9a.com`).
 
 ## Akış
 
@@ -162,6 +162,29 @@ adresi `https://xn--bikyak-r9a.com/auth/google/callback` olmalı.
 
 Öneri: `bikiyak.com` (i ile) da alınıp buraya yönlendirilsin.
 
+## Tema ve marka
+
+**Kobalt & Güneş, modern cüzdan / fintech** (27 Eyl 2026 kullanıcı seçimi). Mobil öncelikli;
+bir sonraki adım mobil uygulama olduğu için bütün değerler `static/styles.css` başındaki
+değişkenlerde durur ve uygulamaya aynen taşınır:
+
+| Değişken | Değer | Kullanım |
+|---|---|---|
+| `--primary` | `#2447F5` | ana düğmeler, seçili sekme, bağlantılar |
+| `--ink` | `#0B1433` | metin, logo yazısı |
+| `--accent` | `#FFC933` | damga, ödül, logo bileti |
+| `--bg` / `--surface` | `#F2F4FA` / `#FFFFFF` | zemin / kartlar |
+| `--cat-*` | kafe `#7A4B2E`, restoran `#C8452F`, fırın `#D9892B`, market `#2F8F5B`, berber `#26335C`, diğer `#2447F5` | cüzdan kartları, harita iğneleri |
+
+- Yazı tipleri: **Sora** (başlıklar, logo) ve **Plus Jakarta Sans** (metin), `static/fonts/` altında
+  yerel (CSP dış kaynağa izin vermez; OFL lisansları yanında). Türkçe harfler latin-ext dosyasında.
+- Logo: **kıyak bileti**, yani sarı çentikli bilet, içinde "bikıyak" ve gülümseme. Üst çubukta satır içi
+  SVG olarak çizilir (yazı tipini sayfadan alır). İkon: sarı kare, lacivert "b" ve gülümseme.
+- `static/brand/`: `icon-512/192/32.png`, `icon-180.png` (iOS), `icon-maskable-512.png` (Android),
+  `google-logo-120.png` (Google giriş ekranı), `logo-ticket.png`. Tarayıcıda Sora ile çizilip
+  PNG'ye alındı; logo değişirse aynı yolla yeniden üretilir.
+- PWA: `static/manifest.webmanifest`, yani site telefonda "Ana ekrana ekle" ile uygulama gibi açılır.
+
 ## Temalı QR
 
 `static/js/qr-themes.js`, `qrcode.min.js`'in modül ızgarasını alıp SVG'yi kendisi
@@ -169,7 +192,7 @@ adresi `https://xn--bikyak-r9a.com/auth/google/callback` olmalı.
 bölge, üç konum işareti sağlam; tema resmi (fincan, tabak, ekmek, poşet, berber
 direği) karenin **dışında**. İçeride yalnız modül biçimi, renk ve konum işaretlerinin
 şekli değişir (kafe: kahve çekirdeği). Hata düzeltme Q. 27 Eyl 2026'da altı tema da
-zxing-cpp ile 788, 394 ve 275 piksel genişlikte çözüldü (18/18). Yeni tema ekleyince
+zxing-cpp ile 788, 394 ve 275 piksel genişlikte çözüldü (18/18); marka renklerine geçişten sonra yeniden: 18/18. Yeni tema ekleyince
 aynı denetimi tekrarla.
 
 ## Yol haritası: v1 → v2 → v3

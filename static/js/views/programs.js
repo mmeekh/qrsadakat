@@ -31,7 +31,7 @@ defineView("programs", {
 function programCard(program) {
   const theme = themeFor(state.me.merchant.category);
   const stats = `${program.customers} müşteri${program.rewards_waiting ? ` · ${program.rewards_waiting} ödül bekliyor` : ""}`;
-  return h("div", { class: `program-card${program.archived ? " archived" : ""}` },
+  return h("div", { class: `program-card pass pass-${theme.slug}${program.archived ? " archived" : ""}` },
     h("button", { class: "program-open", type: "button", disabled: program.archived,
       onclick: () => go("qr", { program }) },
       h("span", { class: `place-icon pin-${theme.slug}` }, theme.icon),

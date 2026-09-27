@@ -4,6 +4,7 @@
 import { api, signIn, startLogin } from "../api.js";
 import { defineView, renderTabs } from "../nav.js";
 import { refreshMe, state } from "../state.js";
+import { themeFor } from "../qr-themes.js";
 import { $, googleButton, stampDots } from "../ui.js";
 
 const STAMP_MESSAGES = {
@@ -42,7 +43,8 @@ async function load() {
   const data = await api(`/api/card/${cardId}`);
   const { merchant, program } = data;
   card = data.card;
-  $("customer-card").classList.toggle("cafe-photo", merchant.category === "Kafe");
+  $("customer-card").className = `pass customer-card pass-${themeFor(merchant.category).slug}`;
+  $("card-category").textContent = merchant.category;
   $("card-business").textContent = merchant.business_name;
   $("card-reward").textContent = program.title;
   const stamps = card ? card.stamps : 0;

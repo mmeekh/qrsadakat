@@ -3,47 +3,62 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#152a25">
-  <title>bikıyak — Müşterin yeniden gelsin</title>
+  <meta name="theme-color" content="#F2F4FA">
+  <meta name="description" content="bikıyak: mahalle esnafı için uygulama indirmeden QR ile dijital sadakat kartı.">
+  <title>bikıyak — Her ziyarette bi kıyak</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="/brand/icon-32.png">
+  <link rel="apple-touch-icon" href="/brand/icon-180.png">
+  <link rel="preload" href="/fonts/sora-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/app.css">
   <script src="/vendor/qrcode.min.js" defer></script>
   <script type="module" src="/js/main.js"></script>
 </head>
 <body>
   <div class="shell">
     <header class="topbar">
-      <a id="brand-home" href="/" class="brand" aria-label="bikıyak ana sayfa"><span class="brand-icon">✳</span> bikı<span>yak</span></a>
+      <a id="brand-home" href="/" class="brand" aria-label="bikıyak ana sayfa">
+        <svg viewBox="0 0 176 56" role="img" aria-hidden="true">
+          <path d="M10 2H166A8 8 0 0 1 174 10V21A7 7 0 0 0 174 35V46A8 8 0 0 1 166 54H10A8 8 0 0 1 2 46V35A7 7 0 0 0 2 21V10A8 8 0 0 1 10 2Z" fill="#FFC933"/>
+          <line x1="133" y1="10" x2="133" y2="46" stroke="#0B1433" stroke-opacity=".3" stroke-width="2" stroke-dasharray="3 4"/>
+          <text x="15" y="36.5" font-family="Sora, sans-serif" font-weight="800" font-size="22" letter-spacing="-.6" fill="#0B1433">bikıyak</text>
+          <path d="M144 30q10 9 20 0" stroke="#0B1433" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+        </svg>
+      </a>
       <button id="top-account" class="avatar-button hidden" type="button" aria-label="Hesabım"></button>
     </header>
 
     <main>
       <section id="home-view" class="view hidden">
-        <div class="hero-grid">
+        <div class="hero">
           <div class="hero-copy">
-            <div class="eyebrow"><span class="eyebrow-dot"></span> Yerel işletmeler için dijital sadakat</div>
-            <h1>Müşterin<br><em>yeniden gelsin.</em></h1>
-            <p>Bir QR kodla sadakat kartı aç. Müşterin uygulama indirmeden damga biriktirsin, sen tekrar gelenleri gör.</p>
+            <span class="eyebrow">Mahalle esnafı için dijital sadakat</span>
+            <h1>Her ziyarette <mark>bi kıyak.</mark></h1>
+            <p>Müşterin kasadaki QR'ı kendi telefonuyla okutur, damgası anında kartına işlenir. Uygulama indirmek yok, kart kaybetmek yok.</p>
             <div class="hero-actions">
-              <button id="demo-button" class="button primary hidden" type="button">Hazır demoyu aç <span>↗</span></button>
+              <button id="demo-button" class="button primary hidden" type="button">Hazır demoyu aç <span>→</span></button>
               <button id="start-button" class="button secondary" type="button">İşletmem için başla</button>
               <button id="explore-button" class="button secondary" type="button">Haritada keşfet</button>
             </div>
             <p class="footnote">Pilot sürüm · Google hesabınla giriş · Kurulum ücretsiz</p>
           </div>
-          <div class="preview-card" aria-label="Sadakat kartı örneği">
-            <div class="preview-top"><span class="mini-logo">✳</span><span>BİKIYAK</span></div>
-            <div class="preview-business">Nora Café</div><div class="preview-reward">5 kahve al, 1 kahve bizden.</div>
-            <div class="preview-stamps"><span class="stamp filled">✳</span><span class="stamp filled">✳</span><span class="stamp filled">✳</span><span class="stamp">✳</span><span class="stamp gift">✦</span></div>
-            <div class="preview-bottom"><span>3 / 5 damga</span><span>SONRAKİ KAHVEYE AZ KALDI</span></div>
-            <div class="float-note"><span>↗</span> Müşterinle bağ kur,<br> mahallende büyü.</div>
+          <div class="pass-stack" aria-hidden="true">
+            <div class="pass pass-market"><div class="pass-head"><span>bikıyak</span><span class="chip">Market</span></div><h2>Bereket Bakkal</h2><p>10 alışveriş, 1 ekmek bizden</p></div>
+            <div class="pass pass-firin"><div class="pass-head"><span>bikıyak</span><span class="chip">Fırın</span></div><h2>Köşe Fırın</h2><p>10 simit al, 1 simit bizden</p></div>
+            <div class="pass pass-kafe"><div class="pass-head"><span>bikıyak</span><span class="chip">Kafe</span></div><h2>Nora Café</h2><p>5 damga topla, 1 kahve bedava</p>
+              <div class="card-stamps"><span class="stamp filled">✓</span><span class="stamp filled">✓</span><span class="stamp filled">✓</span><span class="stamp"></span><span class="stamp gift">✦</span></div></div>
           </div>
         </div>
-        <div class="how"><div><b>01</b><h3>Kartını oluştur</h3><p>İşletmeni, ödülünü ve haritadaki yerini seç.</p></div><div><b>02</b><h3>QR'ı göster</h3><p>Müşteri kendi telefonuyla okutsun.</p></div><div><b>03</b><h3>Damga anında işlensin</h3><p>Tekrar gelen müşterini panelde gör.</p></div></div>
+        <ol class="steps">
+          <li><h3>Kartını oluştur</h3><p>İşletmeni ekle, ödülünü seç: bedava ürün, yüzde ya da tutar indirimi.</p></li>
+          <li><h3>QR'ı göster</h3><p>Kartına dokun, QR açılsın. Müşterin kendi telefonuyla okutsun.</p></li>
+          <li><h3>Damga anında işlensin</h3><p>Tekrar gelen müşterini panelde gör, ödülünü tek dokunuşla teslim et.</p></li>
+        </ol>
       </section>
 
       <section id="setup-view" class="view hidden">
-        <div class="page-head"><div><div class="eyebrow">İŞLETME</div><h1 id="setup-title">İşletmeni ekle</h1><p>Müşterilerin seni haritada bu bilgilerle görür.</p></div></div>
+        <div class="page-head"><div><span class="eyebrow">İşletme</span><h1 id="setup-title">İşletmeni ekle</h1><p>Müşterilerin seni haritada bu bilgilerle görür.</p></div></div>
         <form id="setup-form" class="panel setup-form">
           <label>İşletme adı<input name="business_name" maxlength="80" required placeholder="Örn. Nora Café"></label>
           <label>Kategori<select name="category" required></select></label>
@@ -52,18 +67,18 @@
           <div class="map-tools"><span id="pin-status" class="muted"></span><button id="setup-locate" class="text-button" type="button">Konumumu kullan</button></div>
           <div id="setup-map" class="setup-map"></div>
           <input name="lat" type="hidden"><input name="lng" type="hidden">
-          <button id="setup-submit" class="button primary full" type="submit">İşletmemi oluştur <span>↗</span></button>
+          <button id="setup-submit" class="button primary full" type="submit">İşletmemi oluştur <span>→</span></button>
         </form>
       </section>
 
       <section id="programs-view" class="view hidden">
-        <div class="page-head compact"><div><div class="eyebrow">İŞLETME</div><h1>Kartlarım</h1><p id="programs-hint">Damga vermek için karta dokun, QR açılsın.</p></div><button id="new-program" class="button primary small" type="button">Yeni kart</button></div>
+        <div class="page-head"><div><span class="eyebrow">İşletme</span><h1>Kartlarım</h1><p id="programs-hint">Damga vermek için karta dokun, QR açılsın.</p></div><button id="new-program" class="button primary small" type="button">+ Yeni kart</button></div>
         <div id="program-list" class="cards-list"></div>
         <div id="archived-list" class="cards-list archived-list"></div>
       </section>
 
       <section id="program-view" class="view hidden">
-        <div class="page-head compact"><div><button id="program-back" class="back-link" type="button">← Kartlarım</button><div class="eyebrow">KART</div><h1 id="program-title">Yeni kart</h1></div></div>
+        <div class="page-head"><div><button id="program-back" class="back-link" type="button">← Kartlarım</button><h1 id="program-title">Yeni kart</h1></div></div>
         <form id="program-form" class="panel setup-form">
           <label>Ödül için gereken damga<input name="stamps_required" type="number" min="2" max="20" value="5" required></label>
           <p id="stamps-hint" class="muted hidden">Damga hedefi, açık kartlar bu hedefe göre ilerlediği için değiştirilemez.</p>
@@ -79,7 +94,7 @@
           <label data-reward="amount">İndirim tutarı (₺)<input name="reward_money" type="number" min="1" max="10000" value="50" required></label>
           <label data-reward="custom">Ödül metni<input name="reward_title" maxlength="80" required placeholder="Örn. 5 kahve al, 1 kahve bizden"></label>
           <p class="reward-preview">Müşterin kartında şunu görecek: <b id="reward-preview"></b></p>
-          <button id="program-submit" class="button primary full" type="submit">Kartı oluştur <span>↗</span></button>
+          <button id="program-submit" class="button primary full" type="submit">Kartı oluştur <span>→</span></button>
           <button id="program-archive" class="button outline full hidden" type="button">Kartı arşivle</button>
         </form>
       </section>
@@ -87,7 +102,7 @@
       <section id="qr-view" class="view hidden">
         <div class="qr-screen">
           <button id="qr-back" class="back-link" type="button">← Kartlarım</button>
-          <div class="eyebrow">KASA QR'I</div>
+          <span class="eyebrow">Kasa QR'ı</span>
           <h1 id="qr-business">İşletmem</h1>
           <p id="qr-program" class="qr-program"></p>
           <div id="qr-stage" class="qr-stage"></div>
@@ -97,34 +112,52 @@
       </section>
 
       <section id="dashboard-view" class="view hidden">
-        <div class="page-head"><div><div class="eyebrow">İŞLETME PANELİ</div><h1 id="dashboard-title">İşletmem</h1><p>Müşterilerinin ziyaretleri ve ödülleri.</p></div><span class="pilot-badge"><span class="eyebrow-dot"></span> Pilot aktif</span></div>
+        <div class="page-head"><div><span class="eyebrow">İşletme paneli</span><h1 id="dashboard-title">İşletmem</h1><p>Müşterilerinin ziyaretleri ve ödülleri.</p></div></div>
         <div class="dashboard-body">
           <button id="location-banner" class="location-banner hidden" type="button">Haritada görünmek için işletmenin konumunu ekle →</button>
           <div class="metrics"><div class="metric"><span>Ziyaret eden müşteri</span><strong id="metric-customers">0</strong></div><div class="metric"><span>Tekrar gelen</span><strong id="metric-returning">0</strong></div><div class="metric"><span>Toplam damga</span><strong id="metric-visits">0</strong></div><div class="metric"><span>Kullanılan ödül</span><strong id="metric-redeemed">0</strong></div></div>
-          <div class="panel request-panel"><div class="section-title"><div><span class="panel-kicker">ÖDÜLLER</span><h2>Ödül onayı</h2></div></div><div id="redemption-list" class="request-list"></div></div>
-          <div class="panel request-panel"><div class="section-title"><div><span class="panel-kicker">OTOMATİK DAMGALAR</span><h2>Son ziyaretler</h2></div><button id="refresh-dashboard" class="refresh" type="button">Yenile ↻</button></div><div id="recent-list" class="request-list"></div></div>
+          <div class="panel request-panel"><div class="section-title"><div><span class="panel-kicker">Ödüller</span><h2>Ödül onayı</h2></div></div><div id="redemption-list" class="request-list"></div></div>
+          <div class="panel request-panel"><div class="section-title"><div><span class="panel-kicker">Otomatik damgalar</span><h2>Son ziyaretler</h2></div><button id="refresh-dashboard" class="refresh" type="button">Yenile ↻</button></div><div id="recent-list" class="request-list"></div></div>
         </div>
       </section>
 
-      <section id="card-view" class="view hidden"><div class="customer-layout"><div class="customer-intro"><div class="eyebrow">DİJİTAL SADAKAT KARTIN</div><h1>Her ziyaret<br><em>bir adım daha.</em></h1><p>Kasadaki güncel QR kodunu okut; damgan hemen kartına işlensin.</p><div class="customer-note">İlk damgan girişsiz işlenir. Google ile kaydedince kartın hangi telefondan girersen gir seninle.</div></div><div id="customer-card" class="customer-card panel"><div class="customer-card-head"><span class="mini-logo">✳</span><span>BİKIYAK</span></div><h2 id="card-business">İşletme</h2><p id="card-reward">Ödül</p><div id="card-stamps" class="card-stamps"></div><div class="progress-row"><span id="card-progress">0 / 5 damga</span><span id="card-available"></span></div><div class="progress-track"><div id="card-progress-bar"></div></div><p id="card-id" class="card-id"></p><div id="stamp-effect" class="stamp-effect hidden" role="status"><span class="stamp-effect-mark">✳</span><strong id="stamp-effect-title">Damga eklendi!</strong></div><div id="card-gate" class="card-gate hidden"><p id="gate-text"></p><div id="gate-action"></div></div><button id="redeem-button" class="button secondary full hidden" type="button">Ödülümü kullan</button><p id="card-status" class="card-status" role="status"></p><button id="refresh-card" class="text-button" type="button">Kartı yenile ↻</button></div></div></section>
+      <section id="card-view" class="view hidden">
+        <div class="customer-layout">
+          <div id="customer-card" class="pass customer-card">
+            <div class="pass-head"><span>bikıyak</span><span id="card-category" class="chip"></span></div>
+            <h2 id="card-business">İşletme</h2>
+            <p id="card-reward">Ödül</p>
+            <div id="card-stamps" class="card-stamps"></div>
+            <div class="progress-row"><span id="card-progress">0 / 5 damga</span><span id="card-available"></span></div>
+            <div class="progress-track"><div id="card-progress-bar"></div></div>
+            <p id="card-id" class="card-id"></p>
+            <div id="stamp-effect" class="stamp-effect hidden" role="status"><span class="stamp-effect-mark">✓</span><strong id="stamp-effect-title">Damga eklendi!</strong></div>
+            <div id="card-gate" class="card-gate hidden"><p id="gate-text"></p><div id="gate-action"></div></div>
+            <button id="redeem-button" class="button secondary full hidden" type="button">Ödülümü kullan</button>
+            <p id="card-status" class="card-status" role="status"></p>
+            <button id="refresh-card" class="text-button" type="button">Kartı yenile ↻</button>
+          </div>
+          <p class="customer-note">İlk damgan girişsiz işlenir. Google ile kaydedince kartın hangi telefondan girersen gir seninle.</p>
+        </div>
+      </section>
 
       <section id="map-view" class="view hidden">
-        <div class="page-head compact"><div><div class="eyebrow">HARİTA</div><h1>Damga biriktirebileceğin yerler</h1></div><button id="locate-button" class="button secondary small" type="button">Konumumu göster</button></div>
+        <div class="page-head"><div><span class="eyebrow">Harita</span><h1>Damga toplayabileceğin yerler</h1></div><button id="locate-button" class="button secondary small" type="button">Konumumu göster</button></div>
         <div id="map-canvas" class="map-canvas"></div>
         <div id="place-list" class="place-list"></div>
       </section>
 
       <section id="cards-view" class="view hidden">
-        <div class="page-head compact"><div><div class="eyebrow">CÜZDAN</div><h1>Kartlarım</h1></div></div>
+        <div class="page-head"><div><span class="eyebrow">Cüzdan</span><h1>Kartlarım</h1></div></div>
         <div id="cards-list" class="cards-list"></div>
       </section>
 
       <section id="account-view" class="view hidden">
-        <div class="page-head compact"><div><div class="eyebrow">HESAP</div><h1>Hesabım</h1></div></div>
+        <div class="page-head"><div><span class="eyebrow">Hesap</span><h1>Hesabım</h1></div></div>
         <div id="account-body" class="account-body"></div>
       </section>
     </main>
-    <footer><span>✳ bikıyak</span><span>Yerel bağlar, tekrar gelen müşteriler.</span><span>2026 · Pilot sürüm</span></footer>
+    <footer></footer>
   </div>
 
   <nav id="tabbar" class="tabbar" aria-label="Ana menü"></nav>
