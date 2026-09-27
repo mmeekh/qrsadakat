@@ -35,7 +35,8 @@ button{cursor:pointer}
 
 /* Top bar: brand ticket left, account right */
 .topbar{position:sticky;top:0;z-index:1200;display:flex;align-items:center;justify-content:space-between;
-  padding:calc(10px + env(safe-area-inset-top)) var(--gutter) 10px;background:rgba(242,244,250,.92);backdrop-filter:blur(10px)}
+  padding:calc(10px + env(safe-area-inset-top)) var(--gutter) 10px;background:var(--bg);
+  box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(0 -100vmax)}
 .brand{display:inline-flex;text-decoration:none}
 .brand svg{height:38px;width:auto;display:block}
 .avatar-button{width:40px;height:40px;border-radius:50%;border:2px solid var(--surface);background:var(--primary-soft);color:var(--primary);
@@ -219,6 +220,8 @@ footer{display:none}
 
 /* Business dashboard */
 .dashboard-body{display:flex;flex-direction:column;gap:16px;padding-bottom:24px}
+@media(min-width:900px){.dashboard-body{display:grid;grid-template-columns:1fr 1fr;align-items:start}
+  .dashboard-body>.metrics,.dashboard-body>.location-banner{grid-column:1/-1}}
 .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media(min-width:720px){.metrics{grid-template-columns:repeat(4,1fr)}}
 .metric{background:var(--surface);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-1);display:flex;flex-direction:column;gap:8px}
@@ -250,7 +253,7 @@ footer{display:none}
 
 /* Home */
 .hero{display:grid;gap:34px;padding:18px 0 28px;align-items:center}
-@media(min-width:900px){.hero{grid-template-columns:1.05fr .95fr;padding:48px 0}}
+@media(min-width:900px){.hero{grid-template-columns:1.2fr .8fr;gap:48px;padding:56px 0 48px}}
 .hero-copy{display:flex;flex-direction:column;gap:16px}
 .hero-copy h1{font-size:clamp(40px,10vw,64px);font-weight:800;line-height:1.02;letter-spacing:-.035em}
 .hero-copy h1 mark{background:var(--accent);color:var(--ink);border-radius:12px;padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
@@ -258,13 +261,17 @@ footer{display:none}
 .hero-actions{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 @media(min-width:600px){.hero-actions{flex-direction:row;flex-wrap:wrap}}
 .footnote{font-size:13px;color:var(--ink-3)}
-.pass-stack{position:relative;height:330px;max-width:420px;width:100%;margin:0 auto}
-.pass-stack .pass{position:absolute;left:0;right:0;height:210px}
-.pass-stack .pass:nth-child(1){top:0;transform:rotate(-7deg) translateX(-14px) scale(.92)}
-.pass-stack .pass:nth-child(2){top:44px;transform:rotate(4deg) translateX(16px) scale(.96)}
-.pass-stack .pass:nth-child(3){top:104px}
-.pass-stack h2{font-size:24px;margin-top:18px}
-.pass-stack p{opacity:.92;font-weight:600;font-size:14px;margin-top:4px}
+/* Wallet-style stack: back cards show their top strip, the front card is whole. */
+.pass-stack{position:relative;height:332px;max-width:420px;width:100%;margin:0 auto}
+.pass-stack .pass{position:absolute;left:0;right:0;height:220px;padding:18px 20px}
+.pass-stack .pass:nth-child(1){top:0;transform:scale(.9);transform-origin:top center}
+.pass-stack .pass:nth-child(2){top:56px;transform:scale(.95);transform-origin:top center}
+.pass-stack .pass:nth-child(3){top:112px}
+.pass-stack .pass-head{text-transform:none;letter-spacing:0;font-size:15px;opacity:1}
+.pass-stack .pass-head strong{font-family:var(--font-display);font-size:18px}
+.pass-stack p{opacity:.92;font-weight:600;font-size:15px;margin-top:14px}
+.pass-stack .card-stamps{margin:14px 0 10px}
+.pass-stack .progress-row{font-size:12px;opacity:.85}
 .steps{list-style:none;margin:0;padding:0 0 28px;display:grid;gap:12px;counter-reset:step}
 @media(min-width:720px){.steps{grid-template-columns:repeat(3,1fr)}}
 .steps li{background:var(--surface);border-radius:var(--radius-l);padding:18px;box-shadow:var(--shadow-1);counter-increment:step;display:flex;flex-direction:column;gap:6px}
@@ -272,6 +279,19 @@ footer{display:none}
   color:var(--primary);font-weight:800;font-family:var(--font-display);margin-bottom:4px}
 .steps h3{font-size:17px}
 .steps p{color:var(--ink-2);font-size:14px}
+
+/* Desktop: the tab bar moves into the top bar, between the logo and the account button. */
+@media(min-width:900px){
+  .shell{padding-bottom:32px}
+  .tabbar{top:0;bottom:auto;left:50%;right:auto;transform:translateX(-50%);height:60px;padding:0;gap:6px;align-items:center;
+    background:transparent;border:0;box-shadow:none}
+  .tab{flex:none;flex-direction:row;gap:8px;min-height:40px;max-width:none;padding:0 14px;font-size:14px;border-radius:12px}
+  .tab svg{width:19px;height:19px}
+  .tab:hover{color:var(--ink)}
+  .topbar{min-height:60px}
+  .toast{bottom:24px}
+  .page-head{padding-top:36px}
+}
 
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.stamp-effect.play{opacity:1}
   .stamp-effect.play .stamp-effect-mark,.stamp-effect.play strong{opacity:1;transform:none}}
