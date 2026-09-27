@@ -12,16 +12,18 @@ Claude'a devredildi; aynı gün önce "Cheabby", sonra **bikıyak** adını ald�
 
 ## Akış
 
-1. **İşletme hesapları davetle açılır.** İşletmecinin e-postasını operatör ekler, sonra işletmeci
-   Google ile girer ve işletme adı, kategori ve haritadaki yerini girer (adres araması, haritadaki
-   konum düğmesi ya da haritaya dokunarak). Ardından ilk **kartını** açar. Davetsiz bir hesap,
-   hangi e-postanın eklenmesi gerektiğini söyleyen bir mesaj görür. Müşteriler davetsiz girer.
+1. **Sitede herkes müşteri olarak başlar; işletmeleri operatör ekler** (27 Eyl 2026 kararı). Sitede
+   "işletme aç" girişi yok. İşletme şöyle eklenir; sahibi o e-postayla Google'dan ilk girdiğinde
+   işletme paneline düşer (daha önce müşteri olarak girmişse hemen bağlanır):
    ```bash
-   docker exec qrsadakat-app python -m bikiyak.admin invite isletme@gmail.com "Nora Café"
-   docker exec qrsadakat-app python -m bikiyak.admin invites     # kim açtı, kim açmadı
-   docker exec qrsadakat-app python -m bikiyak.admin uninvite isletme@gmail.com
+   docker exec qrsadakat-app python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda Cd. 12, Kadıköy/İstanbul"
+   docker exec qrsadakat-app python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda" 40.9837 29.0268
+   docker exec qrsadakat-app python -m bikiyak.admin merchants    # kim girdi, kaç aktif kartı var
    ```
-   `BIKIYAK_OPEN_SIGNUP=1` daveti kapatır (herkes işletme açabilir).
+   Koordinat verilmezse adres OpenStreetMap'te aranır; iğneyi sahibi sonra "İşletme bilgileri"nden
+   düzeltir. Kategori: Kafe, Restoran, Fırın & pastane, Market, Berber & kuaför, Diğer.
+   `BIKIYAK_OPEN_SIGNUP=1` sitede kendi işletmesini açmayı yeniden açar. (Aynı gün denenen davet
+   akışı bunun yerine geçti; `merchant_invites` tablosu duruyor ama okunmuyor.)
 2. **Kartlar (programlar):** bir işletme en fazla **5 aktif** kart çalıştırır (ör. kahve
    kartı + tatlı kartı). Her kartın damga hedefi (2–20, sonradan değişmez) ve ödülü var:
    **bedava ürün** ("6 damga topla, 1 kahve bedava"), **yüzde indirim** (%5–100),
@@ -171,6 +173,22 @@ adresi `https://xn--bikyak-r9a.com/auth/google/callback` olmalı.
 
 Öneri: `bikiyak.com` (i ile) da alınıp buraya yönlendirilsin.
 
+## Hoş geldin maili
+
+`bikiyak/mail.py`: yeni **müşteriye** ilk Google girişinde **bir kez** gider (işletmecilere, eski
+kullanıcılara ve ikinci girişte gitmez). Başka otomatik mail yok. Gönderen
+`bikıyak <merhaba@bikıyak.com>`, yanıt adresi `iletisim@bikıyak.com`; kanal Resend (anahtar
+`/root/secrets/bikiyak-resend.env`, yalnız gönderim yetkili). `sent_mails` (göç 006) kullanıcı ve
+tür başına tek satır tutar; başarısızlık orada görünür, otomatik yeniden deneme yok.
+
+**Kapalı başlar:** metin ve görsel onaylanınca compose'a `BIKIYAK_WELCOME_MAIL: "1"` eklenir, aynı
+anda gizlilik sayfasının aktarımlar bölümüne Resend yazılır. Üst görsel `static/brand/mail-banner.jpg`
+(1120×448); dosya yoksa mavi bant ve bilet logosu çıkar, kırık resim olmaz.
+```bash
+docker exec qrsadakat-app python -m bikiyak.admin welcome-preview > onizleme.html
+docker exec qrsadakat-app python -m bikiyak.admin welcome-test adres@gmail.com "Ayşe Yılmaz"
+```
+
 ## Gizlilik sayfası
 
 `static/gizlilik.html` (`/gizlilik`, 27 Eyl 2026'dan beri yayında) KVKK aydınlatma metnidir. Sistemin
@@ -235,7 +253,7 @@ Her sürüm bir öncekinin üzerine eklenir.
 | İşletme ödül türünü seçer: bedava ürün, % indirim, ₺ indirim, kendi metni | ✅ |
 | Bir işletmede birden çok kart (en fazla 5 aktif, arşiv), karta dokununca QR | ✅ |
 | Mobil öncelikli arayüz, alt sekme çubuğu | ✅ |
-| Tek tıkla demo (Nora Café + Türkiye geneline 13 hayali yer) | ✅ (`BIKIYAK_DEMO_MODE=1`) |
+| Demo (Nora Café + 13 hayali yer) | 27 Eyl 2026 ciddi başlangıçta kapatıldı (`BIKIYAK_DEMO_MODE=0`) |
 | Puan ve para iadesi (şimdilik yalnız damga) | ⏳ |
 | Kısa süreli anlık kampanyalar (ör. "18:00'e kadar 2 kat puan") | ⏳ |
 | Kartın telefon cüzdanına eklenmesi (Apple / Google Wallet) | ⏳ |

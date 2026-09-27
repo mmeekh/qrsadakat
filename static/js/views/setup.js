@@ -22,9 +22,9 @@ defineView("setup", {
     $("setup-blocked").classList.toggle("hidden", !blocked);
     if (blocked) {
       $("setup-blocked").replaceChildren(
-        h("h2", {}, "İşletme hesapları davetle açılıyor"),
-        h("p", { class: "empty-state" }, `Bu Google hesabı (${state.me.user.email}) henüz işletme olarak eklenmedi. `,
-          "İşletmeni bikıyak'a eklemek için bu e-postayı bikıyak ekibine ilet; eklenince bu sayfadan devam edersin."),
+        h("h2", {}, "İşletmeleri bikıyak ekibi ekliyor"),
+        h("p", { class: "empty-state" }, `Bu Google hesabı (${state.me.user.email}) bir işletmeye bağlı değil. `,
+          "İşletmeni eklemek için bu e-postayla iletisim@bikıyak.com adresine yaz; eklenince bu hesapla girdiğinde işletme panelin açılır."),
         h("button", { class: "button secondary", type: "button", onclick: () => go("map") }, "Haritaya dön"));
       return;
     }

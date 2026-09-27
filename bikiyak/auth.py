@@ -15,7 +15,7 @@ import time
 import urllib.request
 from urllib.parse import urlencode
 
-from . import config
+from . import config, mail
 from .accounts import (adopt_guest, current_user, customer_for_user, customer_of, digest, public_user,
                        start_session, upsert_user)
 from .db import write
@@ -120,7 +120,7 @@ def callback(req: Request) -> Response:
 
     response = Response.redirect(back)
     with write(req.db) as db:
-        user_id = sign_in(req, response, claims)
+        user_id, new_customer = sign_in(req, response, claims)
         if row["intent"] == "card" and row["scan_ok"]:
             program = program_by_id(db, row["program_id"])
             try:
@@ -128,6 +128,8 @@ def callback(req: Request) -> Response:
                 response.location += "&stamp=" + ("reward" if earned else "ok")
             except ApiError:
                 response.location += "&stamp=wait"
+    if new_customer:
+        mail.schedule_welcome(user_id)  # after the commit: the mail thread reads the new row
     return finish(req, response)
 
 
@@ -136,21 +138,24 @@ def finish(req: Request, response: Response) -> Response:
     return response
 
 
-def sign_in(req: Request, response: Response, claims: dict) -> int:
-    """Create or refresh the account, then carry over anything from before Google sign-in."""
+def sign_in(req: Request, response: Response, claims: dict) -> tuple[int, bool]:
+    """Create or refresh the account, then carry over anything from before Google sign-in.
+    Returns (user id, whether this is a brand-new customer account)."""
     db = req.db
+    is_new = db.execute("SELECT 1 FROM users WHERE google_sub=?", (claims["sub"],)).fetchone() is None
     email = claims["email"].strip().lower()[:254]
     name = " ".join(str(claims.get("name") or email.split("@")[0]).split())[:80]
     picture = str(claims.get("picture", ""))
     picture = picture[:500] if re.fullmatch(r"https://[a-z0-9.-]+\.googleusercontent\.com/\S*", picture) else ""
     user_id = upsert_user(db, claims["sub"], email, name, picture)
     if not merchant_of(db, user_id):
-        # A business opened with e-mail and password in the first pilot joins its owner's account.
+        # A business the operator added (admin add-merchant), or one from the first password pilot,
+        # joins its owner's account at the first Google sign-in with that e-mail.
         db.execute("""UPDATE merchants SET user_id=? WHERE id=(SELECT id FROM merchants
           WHERE user_id IS NULL AND lower(email)=? LIMIT 1)""", (user_id, email))
     adopt_guest(req, response, user_id)
     start_session(req, response, user_id)
-    return user_id
+    return user_id, is_new and merchant_of(db, user_id) is None
 
 
 @routes.get("/api/me")

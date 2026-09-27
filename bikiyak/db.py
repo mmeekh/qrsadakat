@@ -149,14 +149,23 @@ def m004_reward_cards(db: sqlite3.Connection) -> None:
 
 
 def m005_merchant_invites(db: sqlite3.Connection) -> None:
-    """Businesses open by invitation: only e-mails the operator adds can create a business.
-    Customers still sign in freely."""
+    """Businesses open by invitation (27 Eyl 2026). Superseded the same day by the operator
+    adding businesses directly (admin add-merchant); the table is kept but no longer read."""
     run(db, """CREATE TABLE merchant_invites (
       email TEXT PRIMARY KEY, note TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL)""")
 
 
+def m006_sent_mails(db: sqlite3.Connection) -> None:
+    """One row per user and mail kind (only 'welcome' so far): nobody gets the same mail twice."""
+    run(db, """CREATE TABLE sent_mails (
+      id INTEGER PRIMARY KEY, user_id INTEGER NOT NULL REFERENCES users(id), kind TEXT NOT NULL,
+      address TEXT NOT NULL, status TEXT NOT NULL CHECK(status IN ('queued','sent','failed')),
+      error TEXT NOT NULL DEFAULT '', provider_id TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL,
+      sent_at TEXT, UNIQUE(user_id, kind))""")
+
+
 MIGRATIONS = (m001_pilot, m002_google_accounts_and_places, m003_reward_types, m004_reward_cards,
-              m005_merchant_invites)
+              m005_merchant_invites, m006_sent_mails)
 
 
 def migrate() -> None:

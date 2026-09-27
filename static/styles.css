@@ -260,7 +260,7 @@ footer{display:none}
 .hero-copy h1 mark{background:var(--accent);color:var(--ink);border-radius:12px;padding:0 .12em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
 .hero-copy>p{font-size:17px;color:var(--ink-2);max-width:46ch}
 .hero-actions{display:flex;flex-direction:column;gap:10px;margin-top:6px}
-@media(min-width:600px){.hero-actions{flex-direction:row;flex-wrap:wrap}}
+@media(min-width:600px){.hero-actions{flex-direction:row;flex-wrap:wrap}.hero-actions .google-button{width:auto;padding:0 24px}}
 .footnote{font-size:13px;color:var(--ink-3)}
 /* Wallet-style stack: back cards show their top strip, the front card is whole. */
 .pass-stack{position:relative;height:332px;max-width:420px;width:100%;margin:0 auto}

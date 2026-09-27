@@ -20,9 +20,7 @@ defineView("account", {
       h("div", { class: "account-actions" },
         merchant
           ? h("button", { class: "button secondary full", type: "button", onclick: () => go("setup") }, `${merchant.business_name} · bilgiler ve konum`)
-          : state.me.can_open_business
-            ? h("button", { class: "button secondary full", type: "button", onclick: () => go("setup") }, "İşletmeni ekle")
-            : null,
+          : null,
         merchant ? h("button", { class: "button secondary full", type: "button", onclick: () => go("cards") },
           "Müşteri olarak kartlarım") : null,
         h("button", { class: "button outline full", type: "button", onclick: logout }, "Çıkış yap")),

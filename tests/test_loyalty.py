@@ -160,7 +160,7 @@ class GuestStampTest(ServerTest):
 class ProfileAndMapTest(ServerTest):
     def test_profile_rules(self):
         owner = self.client()
-        self.invite("owner@example.com")
+        config.OPEN_SIGNUP = True
         self.login(owner, "owner", intent="merchant")
         base = {"business_name": "Kafe", "category": "Kafe", "address": "Moda", "lat": 40.9, "lng": 29.0}
         for broken in ({"lat": None}, {"lat": 0, "lng": 0}, {"lat": 91}, {"category": "Uzay"}, {"business_name": "  "}):

@@ -120,14 +120,11 @@ class ServerTest(unittest.TestCase):
 
     def open_business(self, client, sub, name="Nora Café", required=2):
         """Signs in, opens a business and its first card; returns the card (program)."""
-        self.invite(f"{sub}@example.com")
+        self.sql("""INSERT INTO merchants(name,email,password_hash,business_name,slug,reward_title,stamps_required,
+          created_at,category,address,lat,lng) VALUES(?,?,'',?,?,'',5,'2026-09-27','Kafe','Moda, Kadıköy',40.98,29.02)""",
+                 (name, f"{sub}@example.com", name, f"slug-{sub}"))
         self.login(client, sub, intent="merchant")
-        self.call(client, "/api/merchant", {"business_name": name, "category": "Kafe", "address": "Moda, Kadıköy",
-                                            "lat": 40.98, "lng": 29.02})
         return self.new_card(client, required)
-
-    def invite(self, email):
-        self.sql("INSERT OR IGNORE INTO merchant_invites(email,created_at) VALUES(?,'2026-09-27')", (email.lower(),))
 
     def new_card(self, client, required=2, expected=200, **reward):
         body = {"reward_type": "free", "reward_item": "1 kahve", "stamps_required": required, **reward}

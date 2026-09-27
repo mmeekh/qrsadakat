@@ -34,9 +34,9 @@ def require_merchant(req: Request) -> sqlite3.Row:
 
 
 def may_open_business(db: sqlite3.Connection, user: sqlite3.Row) -> bool:
-    if config.OPEN_SIGNUP or merchant_of(db, user["id"]):
-        return True
-    return db.execute("SELECT 1 FROM merchant_invites WHERE email=?", (user["email"].lower(),)).fetchone() is not None
+    """Businesses are added by the operator (python -m bikiyak.admin add-merchant); the site
+    itself only lets an existing owner edit, unless BIKIYAK_OPEN_SIGNUP is on."""
+    return config.OPEN_SIGNUP or merchant_of(db, user["id"]) is not None
 
 
 def clean(value: object, limit: int) -> str:
