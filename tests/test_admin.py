@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
+import re
 from pathlib import Path
 
 from bikiyak import admin, config, places
@@ -124,3 +126,25 @@ class SetPhotoTest(ServerTest):
         self.assertFalse(config.MEDIA_DIR.exists() and any(config.MEDIA_DIR.iterdir()))
         for path in ("/media/../test.sqlite3", "/media/test.sqlite3", "/media/0123456789abcdef.jpg"):
             self.assertEqual(self.open(self.client(), path).status, 404, path)
+
+
+class BrandAssetsTest(ServerTest):
+    SITE = "https://xn--bikyak-r9a.com"
+
+    def test_every_icon_share_image_and_manifest_icon_is_served(self):
+        browser = self.client()
+        wanted = set()
+        for page in ("/", "/gizlilik", "/yok-boyle-sayfa"):
+            head = self.open(browser, page).read().decode().split("</head>")[0]
+            for ref in re.findall(r'(?:href|content)="([^"]+\.(?:png|jpg|ico|webmanifest))"', head):
+                wanted.add(ref.removeprefix(self.SITE))
+            if page != "/yok-boyle-sayfa":
+                for tag in ("og:title", "og:description", "og:image", "og:url", "twitter:card"):
+                    self.assertIn(tag, head, (page, tag))
+        manifest = json.loads(self.open(browser, "/manifest.webmanifest").read())
+        wanted.update(icon["src"] for icon in manifest["icons"])
+        self.assertTrue({"/favicon.ico", "/brand/og-image.jpg", "/brand/icon-180.png"} <= wanted, wanted)
+        for path in sorted(wanted):
+            response = self.open(browser, path)
+            self.assertEqual(response.status, 200, path)
+            self.assertRegex(response.headers["Content-Type"], r"^(image/|application/manifest)", path)
