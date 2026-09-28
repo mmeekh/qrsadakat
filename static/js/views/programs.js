@@ -2,12 +2,12 @@
 import { api, signIn } from "../api.js";
 import { defineView, go } from "../nav.js";
 import { themeFor } from "../qr-themes.js";
-import { state } from "../state.js";
+import { isSetUp, state } from "../state.js";
 import { $, emptyState, h, toast } from "../ui.js";
 
 export function requireMerchant() {
   if (!state.me.user) { signIn("merchant").catch((error) => toast(error.message)); return null; }
-  if (!state.me.merchant) { go("setup"); return null; }
+  if (!isSetUp(state.me.merchant)) { go("setup"); return null; }
   return state.me.merchant;
 }
 

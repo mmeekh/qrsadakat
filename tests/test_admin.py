@@ -30,6 +30,21 @@ class AddMerchantTest(ServerTest):
         self.assertEqual(len(self.call(self.client(), "/api/places")["places"]), 1)
         self.assertEqual(card["title"], "5 damga topla, 1 kahve bedava")
 
+    def test_email_only_business_is_set_up_by_its_owner_and_stays_off_the_map_until_then(self):
+        code, out = run_admin("add-merchant", "Kurulum@Example.com")
+        self.assertEqual(code, 0, out)
+        self.assertIn("kendisi kurar", out)
+        self.assertIn("(kurulum bekliyor)", run_admin("merchants")[1])
+        owner = self.client()
+        self.login(owner, "kurulum")
+        merchant = self.call(owner, "/api/me")["merchant"]
+        self.assertEqual((merchant["business_name"], merchant["lat"]), ("", None))
+        self.new_card(owner, 5)
+        self.assertEqual(self.call(self.client(), "/api/places")["places"], [])
+        self.call(owner, "/api/merchant", PROFILE)
+        places = self.call(self.client(), "/api/places")["places"]
+        self.assertEqual([(p["business_name"], p["category"]) for p in places], [("Yeni Kafe", "Kafe")])
+
     def test_existing_customer_is_linked_right_away(self):
         customer = self.client()
         self.login(customer, "ayse")

@@ -1,6 +1,6 @@
 import { api, signIn } from "../api.js";
 import { defineView, go } from "../nav.js";
-import { refreshMe, state } from "../state.js";
+import { isSetUp, refreshMe, state } from "../state.js";
 import { $, emptyState, googleButton, h, toast } from "../ui.js";
 
 defineView("account", {
@@ -19,7 +19,8 @@ defineView("account", {
         h("div", {}, h("strong", {}, user.name), h("small", {}, user.email))),
       h("div", { class: "account-actions" },
         merchant
-          ? h("button", { class: "button secondary full", type: "button", onclick: () => go("setup") }, `${merchant.business_name} · bilgiler ve konum`)
+          ? h("button", { class: "button secondary full", type: "button", onclick: () => go("setup") },
+            isSetUp(merchant) ? `${merchant.business_name} · bilgiler ve konum` : "İşletmeni kur: ad, kategori ve konum")
           : null,
         merchant ? h("button", { class: "button secondary full", type: "button", onclick: () => go("cards") },
           "Müşteri olarak kartlarım") : null,

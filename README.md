@@ -18,6 +18,7 @@ Claude'a devredildi; aynı gün önce "Cheabby", sonra **bikıyak** adını ald�
    ```bash
    docker exec qrsadakat-app python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda Cd. 12, Kadıköy/İstanbul"
    docker exec qrsadakat-app python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda" 40.9837 29.0268
+   docker exec qrsadakat-app python -m bikiyak.admin add-merchant isletme@gmail.com   # yalnız e-posta: sahibi kurar
    docker exec qrsadakat-app python -m bikiyak.admin merchants    # kim girdi, kaç aktif kartı var
    docker cp vitrin.jpg qrsadakat-app:/tmp/ && \
      docker exec qrsadakat-app python -m bikiyak.admin set-photo isletme@gmail.com /tmp/vitrin.jpg
@@ -25,7 +26,9 @@ Claude'a devredildi; aynı gün önce "Cheabby", sonra **bikıyak** adını ald�
    `set-photo` haritadaki listede ve balonda görünen fotoğrafı koyar (JPEG/PNG/WebP, en çok 1,5 MB;
    ~1200 px genişlik yeter). Dosya veri biriminde `media/` altına içerik özetiyle kaydedilir ve
    `/media/<özet>.jpg` adresinden sunulur; tür dosya adından değil ilk baytlardan anlaşılır.
-   Koordinat verilmezse adres OpenStreetMap'te aranır; iğneyi sahibi sonra "İşletme bilgileri"nden
+   Yalnız e-postayla eklenen işletmenin sahibi girişte "İşletmeni kur" ekranına düşer (ad, kategori,
+   adres, harita iğnesi); kurulum bitene kadar işletme sayfaları oraya yönlenir ve yer haritada
+   görünmez. Koordinat verilmezse adres OpenStreetMap'te aranır; iğneyi sahibi sonra "İşletme bilgileri"nden
    düzeltir. Kategori: Kafe, Restoran, Fırın & pastane, Market, Berber & kuaför, Diğer.
    `BIKIYAK_OPEN_SIGNUP=1` sitede kendi işletmesini açmayı yeniden açar. (Aynı gün denenen davet
    akışı bunun yerine geçti; `merchant_invites` tablosu duruyor ama okunmuyor.)

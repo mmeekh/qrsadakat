@@ -2,7 +2,7 @@
 import { api, signIn } from "../api.js";
 import { addLocateControl, createMap, loadMaps, locate, markerLatLng, moveTo, placeMarker, setMarkerCategory } from "../map-kit.js";
 import { defineView, go } from "../nav.js";
-import { refreshMe, state } from "../state.js";
+import { isSetUp, refreshMe, state } from "../state.js";
 import { $, h, toast } from "../ui.js";
 
 const form = $("setup-form");
@@ -15,7 +15,8 @@ defineView("setup", {
   async render() {
     if (!state.me.user) return signIn("merchant").catch((error) => toast(error.message));
     const merchant = state.me.merchant;
-    $("setup-title").textContent = merchant ? "İşletme bilgileri" : "İşletmeni ekle";
+    const ready = isSetUp(merchant);
+    $("setup-title").textContent = ready ? "İşletme bilgileri" : merchant ? "İşletmeni kur" : "İşletmeni ekle";
     // Businesses open by invitation; an uninvited account learns which e-mail to pass on.
     const blocked = !merchant && !state.me.can_open_business;
     form.classList.toggle("hidden", blocked);
@@ -30,10 +31,11 @@ defineView("setup", {
     }
     form.category.replaceChildren(...state.config.categories.map((name) => h("option", { value: name }, name)));
     for (const field of ["business_name", "category", "address", "lat", "lng"]) {
-      form[field].value = merchant?.[field] ?? (field === "category" ? "Kafe" : "");
+      // An operator-added business starts empty ('' and null), so both fall back to the defaults.
+      form[field].value = merchant?.[field] || (field === "category" ? "Kafe" : "");
     }
     $("geocode-results").replaceChildren();
-    $("setup-submit").firstChild.textContent = merchant ? "Kaydet " : "İşletmemi oluştur ";
+    $("setup-submit").firstChild.textContent = ready ? "Kaydet " : merchant ? "İşletmemi kur " : "İşletmemi oluştur ";
     try { ml = await loadMaps(); } catch (error) { return toast(error.message); }
     if (!map) {
       map = createMap(ml, $("setup-map"));
@@ -79,7 +81,7 @@ form.addEventListener("submit", async (event) => {
   if (!form.lat.value) return toast("Haritada işletmenin yerini seç.");
   $("setup-submit").disabled = true;
   try {
-    const isNew = !state.me.merchant;
+    const isNew = !isSetUp(state.me.merchant);
     await api("/api/merchant", { method: "POST", body: Object.fromEntries(new FormData(form).entries()) });
     await refreshMe();
     toast(isNew ? "İşletmen hazır. Şimdi ilk kartını oluştur." : "Kaydedildi.");

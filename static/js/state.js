@@ -6,6 +6,9 @@ export const state = {
   me: { user: null, merchant: null, cards: [] },
 };
 
+// A business the operator added by e-mail alone has no name or pin yet: its owner sets it up first.
+export const isSetUp = (merchant) => Boolean(merchant?.business_name && merchant.lat != null);
+
 export async function refreshMe() {
   state.me = await api("/api/me");
   return state.me;

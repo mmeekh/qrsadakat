@@ -3,6 +3,7 @@ self-service sign-up; everyone who signs in on the site starts as a customer.
 
     python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda Cd. 12, Kadıköy/İstanbul"
     python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda, Kadıköy" 40.9837 29.0268
+    python -m bikiyak.admin add-merchant isletme@gmail.com     (bilgileri sahibi ilk girişte kendisi kurar)
     python -m bikiyak.admin set-photo isletme@gmail.com /tmp/vitrin.jpg   (JPEG/PNG/WebP, ≤1,5 MB)
     python -m bikiyak.admin merchants
     python -m bikiyak.admin welcome-preview > onizleme.html
@@ -25,19 +26,24 @@ from .web import ApiError
 
 
 def add_merchant(args: list[str]) -> int:
-    if len(args) not in (4, 6):
-        print("Kullanım: add-merchant E-POSTA \"İşletme adı\" KATEGORİ \"Adres\" [ENLEM BOYLAM]", file=sys.stderr)
+    if len(args) not in (1, 4, 6):
+        print("Kullanım: add-merchant E-POSTA [\"İşletme adı\" KATEGORİ \"Adres\" [ENLEM BOYLAM]]", file=sys.stderr)
         return 2
+    email_only = len(args) == 1
+    if email_only:
+        # E-mail only: the owner enters name, category, address and pin at the first sign-in.
+        args = args + ["", "", ""]
     email, business, category, address = args[0].strip().lower(), " ".join(args[1].split()), args[2], " ".join(args[3].split())
     if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
         print(f"Geçersiz e-posta: {args[0]}", file=sys.stderr)
         return 2
-    if category not in config.CATEGORIES:
-        print(f"Kategori şunlardan biri olmalı: {', '.join(config.CATEGORIES)}", file=sys.stderr)
+    lat = lng = None
+    if not email_only and (not business or category not in config.CATEGORIES):
+        print(f"Ad boş olamaz; kategori şunlardan biri olmalı: {', '.join(config.CATEGORIES)}", file=sys.stderr)
         return 2
     if len(args) == 6:
         lat, lng = float(args[4]), float(args[5])
-    else:
+    elif not email_only:
         from .places import geocode
         try:
             found = geocode(address)
@@ -63,7 +69,10 @@ def add_merchant(args: list[str]) -> int:
                    (business, email, business, secrets.token_urlsafe(8).lower().replace("_", "-"), utcnow(),
                     user["id"] if user else None, category, address, lat, lng))
     linked = "hesabına hemen bağlandı" if user else "Google ile ilk girişte bağlanacak"
-    print(f"İşletme eklendi: {business} ({category}) → {email}, {linked}. İlk kartını Kartlarım'dan açar.")
+    if not email_only:
+        print(f"İşletme eklendi: {business} ({category}) → {email}, {linked}. İlk kartını Kartlarım'dan açar.")
+    else:
+        print(f"İşletme eklendi: {email}, {linked}. Girişte ad, kategori ve konumu kendisi kurar; o zamana kadar haritada görünmez.")
     return 0
 
 
@@ -94,7 +103,8 @@ def list_merchants() -> int:
           FROM merchants m WHERE m.email NOT LIKE '%@mahalle.invalid' ORDER BY m.id""").fetchall()
     for row in rows:
         state = "giriş yaptı" if row["linked"] else "henüz girmedi"
-        print(f"{row['email']}\t{row['business_name']}\t{row['category']}\t{state}\t{row['cards']} aktif kart")
+        name = row["business_name"] or "(kurulum bekliyor)"
+        print(f"{row['email']}\t{name}\t{row['category']}\t{state}\t{row['cards']} aktif kart")
     print(f"{len(rows)} işletme")
     return 0
 

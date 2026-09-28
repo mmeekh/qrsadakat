@@ -1,7 +1,7 @@
 // Boot: load config and the account, then open the view the URL asks for.
 import { api } from "./api.js";
 import { go, hasView, renderTabs } from "./nav.js";
-import { refreshMe, state } from "./state.js";
+import { isSetUp, refreshMe, state } from "./state.js";
 import { $, toast } from "./ui.js";
 import "./views/home.js";
 import "./views/card.js";
@@ -34,7 +34,12 @@ $("top-account").addEventListener("click", () => go("account"));
       .catch((error) => { toast(error.message); go("home"); });
   }
   const wanted = params.get("view");
-  const fallback = state.me.merchant ? "programs" : state.me.user ? "cards" : "home";
-  const target = wanted === "merchant" ? (state.me.merchant ? "programs" : "setup") : hasView(wanted) ? wanted : fallback;
+  const business = state.me.merchant ? (isSetUp(state.me.merchant) ? "programs" : "setup") : null;
+  const fallback = business || (state.me.user ? "cards" : "home");
+  // Signing in from the home page comes back as ?view=cards; a business owner lands on the
+  // business side instead, and on setup while the operator-added business is still empty.
+  const target = wanted === "merchant" ? business || "setup"
+    : business && (wanted === "cards" || business === "setup") ? business
+    : hasView(wanted) ? wanted : fallback;
   go(target).catch((error) => toast(error.message));
 })();
