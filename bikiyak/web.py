@@ -12,7 +12,7 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
-from . import config, db as database
+from . import config, db as database, media
 
 # Map data (vector tiles, glyphs, sprites, style) comes from OpenFreeMap; MapLibre fetches it,
 # also from its worker, which is a same-origin module (worker-src falls back to 'self').
@@ -176,6 +176,9 @@ def make_handler(router: Router):
             path = urlsplit(self.path).path
             if self.command == "GET" and path in files:
                 return self.send_static(*files[path])
+            photo = media.read(path) if self.command == "GET" and path.startswith("/media/") else None
+            if photo:
+                return self.send_media(*photo)
             request = None
             try:
                 found = router.match(self.command, path)
@@ -230,6 +233,16 @@ def make_handler(router: Router):
             self.send_header("Content-Type", mime)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Content-Security-Policy", CSP)
+            self.end_headers()
+            self.wfile.write(body)
+
+        def send_media(self, body: bytes, mime: str) -> None:
+            # Names are content hashes: the same URL always means the same bytes.
+            self.send_response(200)
+            self.send_header("Content-Type", mime)
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "public, max-age=31536000, immutable")
+            self.send_header("X-Content-Type-Options", "nosniff")
             self.end_headers()
             self.wfile.write(body)
 

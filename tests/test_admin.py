@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+from pathlib import Path
 
 from bikiyak import admin, config, places
 from tests.harness import ServerTest
@@ -81,3 +82,30 @@ class PrivacyPageTest(ServerTest):
         self.assertEqual(page.status, 200)
         self.assertTrue(page.headers["Content-Type"].startswith("application/json"))
         self.assertIn("openfreemap", page.read().decode())
+
+
+class SetPhotoTest(ServerTest):
+    def test_operator_sets_a_business_photo_served_from_media(self):
+        run_admin("add-merchant", "owner@example.com", "Nora Café", "Kafe", "Moda", "40.98", "29.02")
+        image = Path(self.temp.name) / "vitrin.jpg"
+        image.write_bytes(b"\xff\xd8\xff\xe0" + b"x" * 500)
+        code, out = run_admin("set-photo", "Owner@Example.com", str(image))
+        self.assertEqual(code, 0, out)
+        owner = self.client()
+        self.login(owner, "owner")
+        self.new_card(owner, 5)
+        photo = self.call(self.client(), "/api/places")["places"][0]["photo"]
+        self.assertRegex(photo, r"^/media/[0-9a-f]{16}\.jpg$")
+        response = self.open(self.client(), photo)
+        self.assertEqual((response.headers["Content-Type"], response.read()), ("image/jpeg", image.read_bytes()))
+        self.assertIn("immutable", response.headers["Cache-Control"])
+
+    def test_refuses_non_images_unknown_businesses_and_stray_paths(self):
+        run_admin("add-merchant", "owner@example.com", "Nora Café", "Kafe", "Moda", "40.98", "29.02")
+        text = Path(self.temp.name) / "not-a-photo.jpg"
+        text.write_text("<svg onload=alert(1)>")
+        self.assertEqual(run_admin("set-photo", "owner@example.com", str(text))[0], 1)
+        self.assertEqual(run_admin("set-photo", "nobody@example.com", str(text))[0], 1)
+        self.assertFalse(config.MEDIA_DIR.exists() and any(config.MEDIA_DIR.iterdir()))
+        for path in ("/media/../test.sqlite3", "/media/test.sqlite3", "/media/0123456789abcdef.jpg"):
+            self.assertEqual(self.open(self.client(), path).status, 404, path)

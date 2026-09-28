@@ -3,6 +3,7 @@ self-service sign-up; everyone who signs in on the site starts as a customer.
 
     python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda Cd. 12, Kadıköy/İstanbul"
     python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda, Kadıköy" 40.9837 29.0268
+    python -m bikiyak.admin set-photo isletme@gmail.com /tmp/vitrin.jpg   (JPEG/PNG/WebP, ≤1,5 MB)
     python -m bikiyak.admin merchants
     python -m bikiyak.admin welcome-preview > onizleme.html
     python -m bikiyak.admin welcome-test adres@gmail.com "Ayşe Yılmaz"   (sends; records nothing)
@@ -16,6 +17,7 @@ import re
 import secrets
 import sys
 from contextlib import closing
+from pathlib import Path
 
 from . import config
 from .db import connect, migrate, utcnow, write
@@ -65,6 +67,26 @@ def add_merchant(args: list[str]) -> int:
     return 0
 
 
+def set_photo(args: list[str]) -> int:
+    if len(args) != 2:
+        print("Kullanım: set-photo E-POSTA DOSYA", file=sys.stderr)
+        return 2
+    from .media import store
+    email = args[0].strip().lower()
+    with closing(connect()) as db, write(db):
+        if not db.execute("SELECT 1 FROM merchants WHERE lower(email)=?", (email,)).fetchone():
+            print(f"Bu e-postayla işletme yok: {args[0]}", file=sys.stderr)
+            return 1
+        try:
+            photo = store(Path(args[1]).read_bytes())
+        except (OSError, ValueError) as error:
+            print(error, file=sys.stderr)
+            return 1
+        db.execute("UPDATE merchants SET photo=? WHERE lower(email)=?", (photo, email))
+    print(f"Fotoğraf kondu: {photo}")
+    return 0
+
+
 def list_merchants() -> int:
     with closing(connect()) as db:
         rows = db.execute("""SELECT m.email, m.business_name, m.category, m.user_id IS NOT NULL AS linked,
@@ -82,6 +104,8 @@ def main(argv: list[str]) -> int:
     command, args = (argv[0], argv[1:]) if argv else ("", [])
     if command == "add-merchant":
         return add_merchant(args)
+    if command == "set-photo":
+        return set_photo(args)
     if command == "merchants":
         return list_merchants()
     if command == "welcome-preview":

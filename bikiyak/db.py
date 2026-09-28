@@ -164,8 +164,13 @@ def m006_sent_mails(db: sqlite3.Connection) -> None:
       sent_at TEXT, UNIQUE(user_id, kind))""")
 
 
+def m007_merchant_photos(db: sqlite3.Connection) -> None:
+    """A photo per business for the map list: a public path, '' when there is none."""
+    run(db, "ALTER TABLE merchants ADD COLUMN photo TEXT NOT NULL DEFAULT ''")
+
+
 MIGRATIONS = (m001_pilot, m002_google_accounts_and_places, m003_reward_types, m004_reward_cards,
-              m005_merchant_invites, m006_sent_mails)
+              m005_merchant_invites, m006_sent_mails, m007_merchant_photos)
 
 
 def migrate() -> None:

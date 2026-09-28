@@ -19,7 +19,12 @@ Claude'a devredildi; aynı gün önce "Cheabby", sonra **bikıyak** adını ald�
    docker exec qrsadakat-app python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda Cd. 12, Kadıköy/İstanbul"
    docker exec qrsadakat-app python -m bikiyak.admin add-merchant isletme@gmail.com "Nora Café" Kafe "Moda" 40.9837 29.0268
    docker exec qrsadakat-app python -m bikiyak.admin merchants    # kim girdi, kaç aktif kartı var
+   docker cp vitrin.jpg qrsadakat-app:/tmp/ && \
+     docker exec qrsadakat-app python -m bikiyak.admin set-photo isletme@gmail.com /tmp/vitrin.jpg
    ```
+   `set-photo` haritadaki listede ve balonda görünen fotoğrafı koyar (JPEG/PNG/WebP, en çok 1,5 MB;
+   ~1200 px genişlik yeter). Dosya veri biriminde `media/` altına içerik özetiyle kaydedilir ve
+   `/media/<özet>.jpg` adresinden sunulur; tür dosya adından değil ilk baytlardan anlaşılır.
    Koordinat verilmezse adres OpenStreetMap'te aranır; iğneyi sahibi sonra "İşletme bilgileri"nden
    düzeltir. Kategori: Kafe, Restoran, Fırın & pastane, Market, Berber & kuaför, Diğer.
    `BIKIYAK_OPEN_SIGNUP=1` sitede kendi işletmesini açmayı yeniden açar. (Aynı gün denenen davet
@@ -302,7 +307,13 @@ yerli ticaret altyapısı.
   `static/map-style.json`, OpenFreeMap "positron" stilinin `deploy/build_map_style.py` ile
   yeniden renklendirilmiş hâli (yalnız ana cadde/otoyol sarı, yer adları Türkçe). Stili
   değiştirmek için betiği düzenleyip `python3 deploy/build_map_style.py` çalıştır.
-  Atıf zorunlu, "ⓘ" içinde duruyor. CSP'de
+  Atıf zorunlu, "ⓘ" içinde duruyor.
+- Harita altındaki liste kompakt satırlardır (fotoğraf, ad, kartlar, yol tarifi). Satıra dokununca
+  harita o yere uçar ve balonu açar; iğne çerçevenin altına oturur ki balon sığsın.
+- Örnek işletme fotoğrafları (`static/demo/*.webp`, 960×600) Wikimedia Commons'tan **CC0**:
+  Köşe Fırın "Sankt Peders Stræde, Copenhagen, Danish pastry in bakery", Nora Café "Coffee in
+  Montreal (Unsplash)", Usta Berber "Jorj barbershop in mashhad iran … 08", Nergis Çiçekçilik
+  "Retail flower display". Yüz ve gerçek tabela olmayanlar seçildi (yerler hayali). CSP'de
   `connect-src https://tiles.openfreemap.org` var; işçi aynı kökten modül olarak yüklenir (blob yok).
 - Adres araması Nominatim'e saniyede en çok bir istek atar (yalnız girişli kullanıcı).
 - Demo modu açıkken demo yerleri haritada görünür; lansmanda `BIKIYAK_DEMO_MODE=0`.

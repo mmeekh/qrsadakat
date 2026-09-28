@@ -9,6 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 STATIC_DIR = ROOT / "static"
 DB_PATH = Path(os.environ.get("BIKIYAK_DB", str(ROOT / "pilot.sqlite3")))
+# Uploaded business photos live beside the database, on the same volume.
+MEDIA_DIR = Path(os.environ.get("BIKIYAK_MEDIA", str(DB_PATH.parent / "media")))
 HOST = os.environ.get("BIKIYAK_HOST", "127.0.0.1")
 PORT = int(os.environ.get("BIKIYAK_PORT", "8088"))
 # Google compares redirect_uri byte for byte, so production pins the public origin.

@@ -53,10 +53,11 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 class ServerTest(unittest.TestCase):
     def setUp(self):
         self.saved = {name: getattr(config, name) for name in
-                      ("DB_PATH", "DEMO_MODE", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "PUBLIC_URL", "OPEN_SIGNUP", "DEMO_PLACES")}
+                      ("DB_PATH", "MEDIA_DIR", "DEMO_MODE", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "PUBLIC_URL", "OPEN_SIGNUP", "DEMO_PLACES")}
         self.saved_token_url = auth.GOOGLE_TOKEN_URL
         self.temp = tempfile.TemporaryDirectory()
         config.DB_PATH = Path(self.temp.name) / "test.sqlite3"
+        config.MEDIA_DIR = Path(self.temp.name) / "media"
         config.DEMO_MODE, config.PUBLIC_URL, config.OPEN_SIGNUP, config.DEMO_PLACES = False, "", False, False
         config.GOOGLE_CLIENT_ID, config.GOOGLE_CLIENT_SECRET = "test-client", "test-secret"
         self.google = FakeGoogle()

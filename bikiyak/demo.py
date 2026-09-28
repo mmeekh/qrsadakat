@@ -54,6 +54,9 @@ DEMO_PLACES = (
 )
 # Four neighbouring Istanbul places shown on the live map when BIKIYAK_DEMO_PLACES=1.
 SHOWCASE = ("nora-cafe-demo", "kose-firin-demo", "usta-berber-demo", "nergis-cicek-demo")
+# CC0 stock photos (Wikimedia Commons, sources in README), no faces or real shop signs: the
+# places are fictional.
+PHOTOS = {slug: f"/demo/{slug[:-5]}.webp" for slug in SHOWCASE}
 DEMO_CUSTOMERS = (("Elif Kaya", 3, 3, 0), ("Mert Aydın", 6, 1, 1), ("Zeynep Tunç", 1, 1, 0))
 # Nora Café shows that one business can run several cards.
 EXTRA_CARDS = {"nora-cafe-demo": (({"reward_type": "percent", "reward_item": "", "reward_amount": 20, "custom": ""}, 8),)}
@@ -83,6 +86,8 @@ def seed_demo() -> None:
             seed_cards(db, merchant_id, place)
             if index == 0:
                 seed_activity(db, merchant_id)
+        for slug, photo in PHOTOS.items():
+            db.execute("UPDATE merchants SET photo=? WHERE slug=? AND photo=''", (photo, slug))
 
 
 def seed_cards(db, merchant_id: int, place: dict) -> None:

@@ -15,7 +15,7 @@ routes = Router()
 
 
 def public_merchant(row: sqlite3.Row) -> dict:
-    return {k: row[k] for k in ("id", "business_name", "slug", "category", "address", "lat", "lng")}
+    return {k: row[k] for k in ("id", "business_name", "slug", "category", "address", "lat", "lng", "photo")}
 
 
 def merchant_of(db: sqlite3.Connection, user_id: int) -> sqlite3.Row | None:

@@ -230,6 +230,11 @@ class ProfileAndMapTest(ServerTest):
         self.assertEqual(shown.pop(0), ("Gerçek Kafe", False))
         self.assertEqual(shown, [("Köşe Fırın", True), ("Nergis Çiçekçilik", True), ("Nora Café", True),
                                  ("Usta Berber", True)])
+        # Each sample place has its photo, and every photo is a file the site serves.
+        photos = {p["business_name"]: p["photo"] for p in places}
+        self.assertEqual(photos["Gerçek Kafe"], "")
+        for name in ("Köşe Fırın", "Nergis Çiçekçilik", "Nora Café", "Usta Berber"):
+            self.assertEqual(self.open(browser, photos[name]).headers["Content-Type"], "image/webp", name)
         self.call(browser, "/api/demo/login", {}, 404)
 
     def test_static_files_and_security_headers(self):
