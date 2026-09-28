@@ -172,12 +172,14 @@ footer{display:none}
 .place-programs b{display:block;font-size:14px}
 .place-programs small{display:block;color:var(--ink-2);font-size:12px;margin-top:2px;font-variant-numeric:tabular-nums}
 .place-actions{display:flex;gap:8px;flex-wrap:wrap}
-.place-popup{min-width:220px;font-family:var(--font-body)}
-.leaflet-container{font-family:var(--font-body)}
-.leaflet-popup-content-wrapper{border-radius:var(--radius)}
-.leaflet-container .place-popup a.button{color:var(--ink)}
-.map-pin span{width:42px;height:42px;border-radius:50% 50% 50% 6px;transform:rotate(-45deg);display:grid;place-items:center;
-  background:var(--pass,var(--primary));border:3px solid #fff;box-shadow:0 6px 16px rgba(11,20,51,.35);font-size:19px}
+.place-popup{min-width:230px;font-family:var(--font-body);color:var(--ink)}
+.place-popup .place-programs{margin:10px 0}
+.place-popup a.button{color:var(--ink)}
+/* Map pins: a teardrop in the category colour with a white rim; lifted slightly on hover. */
+.map-pin{width:42px;height:48px;display:flex;justify-content:center;cursor:pointer;filter:drop-shadow(0 6px 10px rgba(11,20,51,.28))}
+.map-pin span{width:40px;height:40px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);display:grid;place-items:center;
+  background:var(--pass,var(--primary));border:3px solid #fff;font-size:18px;transition:transform .15s}
+.map-pin:hover span{transform:rotate(-45deg) scale(1.08)}
 .map-pin i{transform:rotate(45deg);font-style:normal;line-height:1}
 .map-pin.pin-kafe{--pass:var(--cat-kafe)} .map-pin.pin-restoran{--pass:var(--cat-restoran)} .map-pin.pin-firin{--pass:var(--cat-firin)}
 .map-pin.pin-market{--pass:var(--cat-market)} .map-pin.pin-berber{--pass:var(--cat-berber)} .map-pin.pin-diger{--pass:var(--cat-diger)}
@@ -309,7 +311,7 @@ footer{display:none}
 
 /* Map "my location" button, bottom right on the map (Google Maps style) */
 .locate-control{width:44px;height:44px;border-radius:50%;border:0;background:#fff;color:var(--primary);display:grid;place-items:center;
-  box-shadow:0 2px 6px rgba(11,20,51,.3);cursor:pointer;margin:0 12px 16px 0}
+  box-shadow:0 2px 10px rgba(11,20,51,.22);cursor:pointer}
 .locate-control svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 .locate-control svg circle:first-child{fill:currentColor;stroke:none}
 .locate-control:hover{background:var(--surface-2)}
@@ -332,3 +334,18 @@ footer{display:none}
 .legal th{font-weight:700;color:var(--ink)}
 .legal tr:last-child td{border-bottom:0}
 .legal code{font-size:13px}
+
+/* MapLibre: quiet controls, rounded popup, compact attribution (credit to OpenStreetMap is required) */
+.map-canvas .maplibregl-canvas,.setup-map .maplibregl-canvas{outline:none}
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group{margin:12px 12px 0 0}
+.maplibregl-ctrl-bottom-right .maplibregl-ctrl{margin:0 12px 14px 0}
+.maplibregl-ctrl-group{border-radius:12px!important;overflow:hidden;box-shadow:0 2px 10px rgba(11,20,51,.18)!important}
+.maplibregl-ctrl-group button{width:36px;height:36px}
+.maplibregl-ctrl-attrib{font:11px var(--font-body);background:rgba(255,255,255,.75)!important}
+.maplibregl-ctrl-attrib a{color:var(--ink-2)}
+.maplibregl-popup-content{border-radius:var(--radius);padding:14px 16px;box-shadow:0 12px 30px rgba(11,20,51,.22)}
+.maplibregl-popup-close-button{width:28px;height:28px;font-size:20px;color:var(--ink-2);border-radius:0 var(--radius) 0 10px}
+.here-dot{width:18px;height:18px;border-radius:50%;background:var(--primary);border:3px solid #fff;
+  box-shadow:0 0 0 0 rgba(36,71,245,.45),0 2px 6px rgba(11,20,51,.35);animation:herePulse 2s ease-out infinite}
+@keyframes herePulse{0%{box-shadow:0 0 0 0 rgba(36,71,245,.45),0 2px 6px rgba(11,20,51,.35)}
+  70%{box-shadow:0 0 0 16px rgba(36,71,245,0),0 2px 6px rgba(11,20,51,.35)}100%{box-shadow:0 0 0 0 rgba(36,71,245,0),0 2px 6px rgba(11,20,51,.35)}}

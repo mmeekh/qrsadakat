@@ -1,12 +1,12 @@
 // Business profile: name, category and the pin on the map. Rewards are cards (program.js).
 import { api, signIn } from "../api.js";
-import { baseMap, loadLeaflet, locate, locateControl, pinIcon } from "../map-kit.js";
+import { addLocateControl, createMap, loadMaps, locate, markerLatLng, moveTo, placeMarker, setMarkerCategory } from "../map-kit.js";
 import { defineView, go } from "../nav.js";
 import { refreshMe, state } from "../state.js";
 import { $, h, toast } from "../ui.js";
 
 const form = $("setup-form");
-let L = null;
+let ml = null;
 let map = null;
 let pin = null;
 
@@ -34,19 +34,19 @@ defineView("setup", {
     }
     $("geocode-results").replaceChildren();
     $("setup-submit").firstChild.textContent = merchant ? "Kaydet " : "İşletmemi oluştur ";
-    try { L = await loadLeaflet(); } catch (error) { return toast(error.message); }
+    try { ml = await loadMaps(); } catch (error) { return toast(error.message); }
     if (!map) {
-      map = baseMap(L, $("setup-map"));
-      map.on("click", (event) => setPin(event.latlng.lat, event.latlng.lng));
-      locateControl(L, map, async () => {
-        try { const [lat, lng] = await locate(); setPin(lat, lng); map.setView([lat, lng], 17); }
+      map = createMap(ml, $("setup-map"));
+      map.on("click", (event) => setPin(event.lngLat.lat, event.lngLat.lng));
+      addLocateControl(map, async () => {
+        try { const [lat, lng] = await locate(); setPin(lat, lng); moveTo(map, [lat, lng], 17); }
         catch (error) { toast(error.message); }
       });
     }
     if (pin) { pin.remove(); pin = null; }
-    if (merchant?.lat != null) { setPin(merchant.lat, merchant.lng); map.setView([merchant.lat, merchant.lng], 16); }
+    if (merchant?.lat != null) { setPin(merchant.lat, merchant.lng); moveTo(map, [merchant.lat, merchant.lng], 16, false); }
     $("pin-status").textContent = merchant?.lat != null ? "Konum seçildi ✓" : "Haritaya dokunarak işletmenin yerini seç.";
-    setTimeout(() => map.invalidateSize(), 0);
+    setTimeout(() => map.resize(), 0);
   },
 });
 
@@ -54,12 +54,12 @@ function setPin(lat, lng) {
   form.lat.value = lat;
   form.lng.value = lng;
   $("pin-status").textContent = "Konum seçildi ✓ (iğneyi sürükleyerek düzeltebilirsin)";
-  if (pin) return pin.setLatLng([lat, lng]);
-  pin = L.marker([lat, lng], { icon: pinIcon(L, form.category.value), draggable: true }).addTo(map);
-  pin.on("dragend", () => { const p = pin.getLatLng(); form.lat.value = p.lat; form.lng.value = p.lng; });
+  if (pin) return pin.setLngLat([lng, lat]);
+  pin = placeMarker(ml, map, form.category.value, [lat, lng], { draggable: true });
+  pin.on("dragend", () => { [form.lat.value, form.lng.value] = markerLatLng(pin); });
 }
 
-form.category.addEventListener("change", () => { if (pin) pin.setIcon(pinIcon(L, form.category.value)); });
+form.category.addEventListener("change", () => { if (pin) setMarkerCategory(pin, form.category.value); });
 
 $("geocode-button").addEventListener("click", async () => {
   const results = $("geocode-results");
@@ -67,7 +67,7 @@ $("geocode-button").addEventListener("click", async () => {
     const data = await api(`/api/geocode?q=${encodeURIComponent(form.address.value)}`);
     results.replaceChildren(...(data.results.length ? data.results.map((item) => h("button", {
       type: "button", class: "geocode-item",
-      onclick: () => { setPin(item.lat, item.lng); map.setView([item.lat, item.lng], 17); results.replaceChildren(); },
+      onclick: () => { setPin(item.lat, item.lng); moveTo(map, [item.lat, item.lng], 17); results.replaceChildren(); },
     }, item.label)) : [h("p", { class: "muted" }, "Adres bulunamadı; haritada yerini dokunarak seç.")]));
   } catch (error) { toast(error.message); }
 });

@@ -1,13 +1,14 @@
 // Every business that takes bikıyak stamps, on a map and as a list sorted by distance.
 import { api } from "../api.js";
-import { baseMap, DEFAULT_VIEW, directionsUrl, distanceKm, hereDot, loadLeaflet, locate, locateControl, pinIcon } from "../map-kit.js";
+import { addLocateControl, createMap, DEFAULT_VIEW, directionsUrl, distanceKm, loadMaps, locate, moveTo, placeMarker,
+  showHere } from "../map-kit.js";
 import { defineView, go } from "../nav.js";
 import { themeFor } from "../qr-themes.js";
 import { $, h, toast } from "../ui.js";
 
-let L = null;
+let ml = null;
 let map = null;
-let layer = null;
+let markers = [];
 let places = [];
 let here = null;
 let hereMarker = null;
@@ -16,22 +17,18 @@ let askedForLocation = false;
 defineView("map", {
   async render() {
     let data;
-    try { [L, data] = await Promise.all([loadLeaflet(), api("/api/places")]); }
+    try { [ml, data] = await Promise.all([loadMaps(), api("/api/places")]); }
     catch (error) { toast(error.message); return; }
     places = data.places;
     if (!map) {
-      map = baseMap(L, $("map-canvas"));
-      layer = L.layerGroup().addTo(map);
-      locateControl(L, map, () => findMe(true));
+      map = createMap(ml, $("map-canvas"));
+      addLocateControl(map, () => findMe(true));
     }
-    layer.clearLayers();
-    for (const place of places) {
-      L.marker([place.lat, place.lng], { icon: pinIcon(L, place.category), title: place.business_name })
-        .bindPopup(() => placeCard(place, true)).addTo(layer);
-    }
-    if (here) map.setView(here, 15);
-    else map.setView(DEFAULT_VIEW.center, DEFAULT_VIEW.zoom);
-    setTimeout(() => map.invalidateSize(), 0);
+    markers.forEach((marker) => marker.remove());
+    markers = places.map((place) => placeMarker(ml, map, place.category, [place.lat, place.lng],
+      { popup: () => placeCard(place, true) }));
+    moveTo(map, here || DEFAULT_VIEW.center, here ? 15 : DEFAULT_VIEW.zoom, false);
+    setTimeout(() => map.resize(), 0);
     renderList();
     // First visit: ask once for the location so the map opens around the visitor.
     if (!here && !askedForLocation) {
@@ -71,8 +68,8 @@ function renderList() {
 async function findMe(userAsked) {
   try {
     here = await locate();
-    hereMarker = hereDot(L, map, here, hereMarker);
-    map.setView(here, 15);
+    hereMarker = showHere(ml, map, here, hereMarker);
+    moveTo(map, here, 15);
     renderList();
   } catch (error) {
     // Only a tap on the button deserves an error; the automatic first try stays quiet.

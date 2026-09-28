@@ -80,7 +80,7 @@ static/
   js/api.js, state.js, ui.js, map-kit.js, qr-themes.js
   js/views/*.js          her ekran bir modül (home, card, map, cards, account, setup,
                          programs, program + reward-picker, merchant: QR ve panel)
-  vendor/                qrcode.min.js (QR-LICENSE), leaflet 1.9.4 (BSD-2)
+  vendor/                qrcode.min.js (QR-LICENSE), maplibre 6.11.2 (BSD-3, ES modül + işçi)
 tests/                   gerçek sunucu + sahte Google token uç noktası
 deploy/                  Dockerfile, compose, Caddy, DuckDNS, test-in-image.sh
 ```
@@ -297,7 +297,8 @@ yerli ticaret altyapısı.
 
 - Ekrandaki güncel QR'ın fotoğrafı ~90 saniye içinde paylaşılırsa başkası da damga
   alabilir (aynı karta saatte bir damga sınırı var); fiziksel alışveriş doğrulaması yok.
-- Harita karoları OpenStreetMap'in ücretsiz sunucusundan gelir; trafik büyüyünce
-  ücretli bir karo sağlayıcısına geçilmeli (OSM kullanım politikası).
+- Harita: MapLibre GL (yerel, `static/vendor/maplibre`) + OpenFreeMap "positron" vektör altlığı
+  (ücretsiz, anahtarsız, ticari kullanım serbest). Atıf zorunlu, "ⓘ" içinde duruyor. CSP'de
+  `connect-src https://tiles.openfreemap.org` var; işçi aynı kökten modül olarak yüklenir (blob yok).
 - Adres araması Nominatim'e saniyede en çok bir istek atar (yalnız girişli kullanıcı).
 - Demo modu açıkken demo yerleri haritada görünür; lansmanda `BIKIYAK_DEMO_MODE=0`.

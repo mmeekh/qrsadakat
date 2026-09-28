@@ -1,71 +1,110 @@
-// Leaflet + OpenStreetMap tiles, loaded only when a map is first shown.
+// Maps: MapLibre GL (vector, self-hosted in /vendor/maplibre) on OpenFreeMap tiles, loaded only
+// when a map is first shown. Views work in [lat, lng]; MapLibre wants [lng, lat], converted here.
 import { themeFor } from "./qr-themes.js";
 
-let loading = null;
-
-export function loadLeaflet() {
-  if (!loading) {
-    loading = new Promise((resolve, reject) => {
-      const css = document.createElement("link");
-      css.rel = "stylesheet";
-      css.href = "/vendor/leaflet/leaflet.css";
-      document.head.append(css);
-      const script = document.createElement("script");
-      script.src = "/vendor/leaflet/leaflet.js";
-      script.onload = () => resolve(window.L);
-      script.onerror = () => { loading = null; reject(new Error("Harita yüklenemedi.")); };
-      document.head.append(script);
-    });
-  }
-  return loading;
-}
-
+// Light, low-noise basemap so the category pins carry the colour. Other OpenFreeMap styles:
+// liberty, bright, dark. The attribution (OpenFreeMap, OpenMapTiles, OpenStreetMap) is required.
+const STYLE = "https://tiles.openfreemap.org/styles/positron";
 // Without the visitor's location the map opens at city scale on Istanbul, not the whole country.
 export const DEFAULT_VIEW = { center: [41.0082, 28.9784], zoom: 11 };
 const LOCATE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/>' +
   '<path d="M12 2v3m0 14v3M2 12h3m14 0h3"/><circle cx="12" cy="12" r="8"/></svg>';
 
-export function baseMap(L, element) {
-  const map = L.map(element, { zoomControl: true }).setView(DEFAULT_VIEW.center, DEFAULT_VIEW.zoom);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-  }).addTo(map);
+let loading = null;
+
+export function loadMaps() {
+  if (!loading) {
+    const css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = "/vendor/maplibre/maplibre-gl.css";
+    document.head.append(css);
+    loading = import("/vendor/maplibre/maplibre-gl.mjs").catch(() => {
+      loading = null;
+      throw new Error("Harita yüklenemedi.");
+    });
+  }
+  return loading;
+}
+
+const lngLat = ([lat, lng]) => [lng, lat];
+
+export function createMap(ml, element) {
+  const map = new ml.Map({
+    container: element, style: STYLE, center: lngLat(DEFAULT_VIEW.center), zoom: DEFAULT_VIEW.zoom,
+    attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false, cooperativeGestures: false,
+  });
+  map.touchZoomRotate.disableRotation();
+  map.addControl(new ml.NavigationControl({ showCompass: false }), "top-right");
+  map.addControl(new ml.AttributionControl({ compact: true }), "bottom-left");
+  // The credit stays one tap away behind the "i" instead of covering the map on phones.
+  map.once("load", () => element.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show"));
   return map;
 }
 
-export function pinIcon(L, category) {
-  const theme = themeFor(category);
+export function moveTo(map, latlng, zoom, animate = true) {
+  if (animate) map.flyTo({ center: lngLat(latlng), zoom, speed: 1.6 });
+  else map.jumpTo({ center: lngLat(latlng), zoom });
+}
+
+function pinElement(category) {
   // Classes, not inline styles: the page's CSP forbids style attributes.
-  return L.divIcon({ className: `map-pin pin-${theme.slug}`, html: `<span><i>${theme.icon}</i></span>`,
-    iconSize: [42, 42], iconAnchor: [21, 40], popupAnchor: [0, -36] });
+  const theme = themeFor(category);
+  const pin = document.createElement("div");
+  pin.className = `map-pin pin-${theme.slug}`;
+  const drop = document.createElement("span");
+  const icon = document.createElement("i");
+  icon.textContent = theme.icon;
+  drop.append(icon);
+  pin.append(drop);
+  return pin;
+}
+
+export function placeMarker(ml, map, category, latlng, { draggable = false, popup = null } = {}) {
+  const marker = new ml.Marker({ element: pinElement(category), anchor: "bottom", draggable })
+    .setLngLat(lngLat(latlng)).addTo(map);
+  if (popup) {
+    // Built when opened, so it shows the current distance and progress.
+    const bubble = new ml.Popup({ offset: 40, maxWidth: "300px", closeButton: true });
+    bubble.on("open", () => bubble.setDOMContent(popup()));
+    marker.setPopup(bubble);
+  }
+  return marker;
+}
+
+export function setMarkerCategory(marker, category) {
+  marker.getElement().className = `map-pin pin-${themeFor(category).slug}`;
+}
+
+export const markerLatLng = (marker) => { const p = marker.getLngLat(); return [p.lat, p.lng]; };
+
+export function showHere(ml, map, latlng, existing) {
+  if (existing) return existing.setLngLat(lngLat(latlng));
+  const dot = document.createElement("div");
+  dot.className = "here-dot";
+  return new ml.Marker({ element: dot }).setLngLat(lngLat(latlng)).addTo(map);
 }
 
 // A round "my location" button on the map itself, bottom right, as in Google Maps.
-export function locateControl(L, map, onClick) {
-  const Control = L.Control.extend({
-    options: { position: "bottomright" },
+export function addLocateControl(map, onClick) {
+  map.addControl({
     onAdd() {
-      const button = L.DomUtil.create("button", "locate-control");
+      const box = document.createElement("div");
+      box.className = "maplibregl-ctrl";
+      const button = document.createElement("button");
       button.type = "button";
+      button.className = "locate-control";
       button.title = "Konumumu göster";
       button.setAttribute("aria-label", "Konumumu göster");
       button.innerHTML = LOCATE_ICON;
-      L.DomEvent.disableClickPropagation(button);
-      L.DomEvent.on(button, "click", async (event) => {
-        L.DomEvent.preventDefault(event);
+      button.addEventListener("click", async () => {
         button.classList.add("locating");
         try { await onClick(); } finally { button.classList.remove("locating"); }
       });
-      return button;
+      box.append(button);
+      return box;
     },
-  });
-  return new Control().addTo(map);
-}
-
-export function hereDot(L, map, latlng, existing) {
-  if (existing) return existing.setLatLng(latlng);
-  return L.circleMarker(latlng, { radius: 8, color: "#fff", weight: 3, fillColor: "#2447F5", fillOpacity: 1 }).addTo(map);
+    onRemove() {},
+  }, "bottom-right");
 }
 
 export function locate() {

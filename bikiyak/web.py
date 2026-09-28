@@ -14,10 +14,14 @@ from urllib.parse import parse_qs, urlsplit
 
 from . import config, db as database
 
+# Map data (vector tiles, glyphs, sprites, style) comes from OpenFreeMap; MapLibre fetches it,
+# also from its worker, which is a same-origin module (worker-src falls back to 'self').
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self'; "
-       "img-src 'self' data: https://tile.openstreetmap.org https://*.googleusercontent.com; "
+       "img-src 'self' data: blob: https://*.googleusercontent.com; "
+       "connect-src 'self' https://tiles.openfreemap.org; "
        "base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 MIME = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
+        ".mjs": "text/javascript; charset=utf-8",
         ".css": "text/css; charset=utf-8", ".webp": "image/webp", ".svg": "image/svg+xml",
         ".png": "image/png", ".jpg": "image/jpeg", ".woff2": "font/woff2", ".webmanifest": "application/manifest+json"}
 

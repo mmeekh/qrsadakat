@@ -222,7 +222,7 @@ class ProfileAndMapTest(ServerTest):
 
     def test_static_files_and_security_headers(self):
         browser = self.client()
-        for path in ("/", "/js/main.js", "/styles.css", "/vendor/qrcode.min.js", "/vendor/leaflet/leaflet.js",
+        for path in ("/", "/js/main.js", "/styles.css", "/vendor/qrcode.min.js", "/vendor/maplibre/maplibre-gl.mjs",
                      "/fonts/sora-latin.woff2", "/manifest.webmanifest", "/brand/icon-192.png"):
             response = self.open(browser, path)
             self.assertEqual(response.status, 200, path)
