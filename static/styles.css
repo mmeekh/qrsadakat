@@ -349,3 +349,6 @@ footer{display:none}
   box-shadow:0 0 0 0 rgba(36,71,245,.45),0 2px 6px rgba(11,20,51,.35);animation:herePulse 2s ease-out infinite}
 @keyframes herePulse{0%{box-shadow:0 0 0 0 rgba(36,71,245,.45),0 2px 6px rgba(11,20,51,.35)}
   70%{box-shadow:0 0 0 16px rgba(36,71,245,0),0 2px 6px rgba(11,20,51,.35)}100%{box-shadow:0 0 0 0 rgba(36,71,245,0),0 2px 6px rgba(11,20,51,.35)}}
+.demo-chip{display:inline-block;margin-left:8px;vertical-align:middle;font:700 11px/1 var(--font-body);color:#6b4c12;background:var(--accent-soft);
+  border:1px solid #F5DD8C;border-radius:var(--radius-pill);padding:4px 8px}
+.demo-note{margin:10px 0 0;font-size:12px;color:var(--ink-2);background:var(--surface-2);border-radius:10px;padding:8px 10px}

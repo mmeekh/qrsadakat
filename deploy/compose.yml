@@ -8,6 +8,8 @@ services:
     container_name: qrsadakat-app
     environment:
       BIKIYAK_DEMO_MODE: "0"
+      # Four showcase demo places on the map, labelled "Örnek işletme" (28 Sep 2026).
+      BIKIYAK_DEMO_PLACES: "1"
       BIKIYAK_PUBLIC_URL: "https://xn--bikyak-r9a.com"
       # Welcome e-mail to new customers, approved by the owner on 28 Sep 2026.
       BIKIYAK_WELCOME_MAIL: "1"

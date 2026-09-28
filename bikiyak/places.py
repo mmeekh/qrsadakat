@@ -10,7 +10,7 @@ from urllib.parse import urlencode
 
 from . import config
 from .accounts import current_user, customer_of, require_user
-from .demo import DEMO_DOMAIN
+from .demo import DEMO_DOMAIN, SHOWCASE
 from .merchants import public_merchant
 from .programs import public_program
 from .web import ApiError, Request, Router
@@ -43,9 +43,17 @@ def geocode(query: str) -> list[dict]:
 @routes.get("/api/places")
 def places(req: Request) -> dict:
     customer = customer_of(req, current_user(req))
-    hide_demo = "" if config.DEMO_MODE else f" AND email NOT LIKE '%{DEMO_DOMAIN}'"
-    result = {row["id"]: {**public_merchant(row), "programs": []} for row in req.db.execute(
-        f"SELECT * FROM merchants WHERE lat IS NOT NULL AND lng IS NOT NULL{hide_demo} ORDER BY business_name")}
+    if config.DEMO_MODE:
+        demo_filter, params = "", ()
+    elif config.DEMO_PLACES:
+        demo_filter = f" AND (email NOT LIKE '%{DEMO_DOMAIN}' OR slug IN ({','.join('?' * len(SHOWCASE))}))"
+        params = SHOWCASE
+    else:
+        demo_filter, params = f" AND email NOT LIKE '%{DEMO_DOMAIN}'", ()
+    # Demo places are fictional: the page labels them so nobody walks to one.
+    result = {row["id"]: {**public_merchant(row), "demo": row["email"].endswith(DEMO_DOMAIN), "programs": []}
+              for row in req.db.execute(f"SELECT * FROM merchants WHERE lat IS NOT NULL AND lng IS NOT NULL{demo_filter} "
+                                        "ORDER BY business_name", params)}
     for row in req.db.execute("""SELECT p.*, c.stamps AS my_stamps, c.rewards_available AS my_rewards
       FROM programs p LEFT JOIN cards c ON c.program_id=p.id AND c.customer_id=?
       WHERE p.archived_at IS NULL ORDER BY p.id""", (customer,)):

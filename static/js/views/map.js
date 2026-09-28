@@ -49,7 +49,9 @@ function placeCard(place, compact = false) {
   const distance = here ? ` · ${distanceKm(here, [place.lat, place.lng]).toFixed(1)} km` : "";
   return h("div", { class: compact ? "place-popup" : "place-card" },
     h("div", { class: "place-head" }, h("span", { class: `place-icon pin-${theme.slug}` }, theme.icon),
-      h("div", {}, h("strong", {}, place.business_name), h("small", {}, `${place.category}${distance}`))),
+      h("div", {}, h("strong", {}, place.business_name, place.demo ? h("span", { class: "demo-chip" }, "Örnek işletme") : null),
+        h("small", {}, `${place.category}${distance}`))),
+    place.demo ? h("p", { class: "demo-note" }, "Bu, bikıyak'ın nasıl çalıştığını göstermek için örnek bir işletme; adreste gerçek bir dükkân yok.") : null,
     h("ul", { class: "place-programs" }, place.programs.map((program) => h("li", {},
       h("span", {}, h("b", {}, program.title), h("small", {}, progress(program))),
       program.mine ? h("button", { class: "button primary small", type: "button",

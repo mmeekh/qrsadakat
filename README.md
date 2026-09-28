@@ -253,7 +253,7 @@ Her sürüm bir öncekinin üzerine eklenir.
 | İşletme ödül türünü seçer: bedava ürün, % indirim, ₺ indirim, kendi metni | ✅ |
 | Bir işletmede birden çok kart (en fazla 5 aktif, arşiv), karta dokununca QR | ✅ |
 | Mobil öncelikli arayüz, alt sekme çubuğu | ✅ |
-| Demo (Nora Café + 13 hayali yer) | 27 Eyl 2026 ciddi başlangıçta kapatıldı (`BIKIYAK_DEMO_MODE=0`) |
+| Demo | Panel girişi kapalı (`BIKIYAK_DEMO_MODE=0`); haritada 4 örnek yer "Örnek işletme" etiketiyle (`BIKIYAK_DEMO_PLACES=1`, `demo.SHOWCASE`) |
 | Puan ve para iadesi (şimdilik yalnız damga) | ⏳ |
 | Kısa süreli anlık kampanyalar (ör. "18:00'e kadar 2 kat puan") | ⏳ |
 | Kartın telefon cüzdanına eklenmesi (Apple / Google Wallet) | ⏳ |

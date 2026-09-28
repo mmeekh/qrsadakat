@@ -14,6 +14,9 @@ PORT = int(os.environ.get("BIKIYAK_PORT", "8088"))
 # Google compares redirect_uri byte for byte, so production pins the public origin.
 PUBLIC_URL = os.environ.get("BIKIYAK_PUBLIC_URL", "").rstrip("/")
 DEMO_MODE = os.environ.get("BIKIYAK_DEMO_MODE", "0") == "1"
+# Shows only the showcase demo places (demo.SHOWCASE) on the map, marked "Örnek işletme", without
+# the demo login that DEMO_MODE opens.
+DEMO_PLACES = os.environ.get("BIKIYAK_DEMO_PLACES", "0") == "1"
 # Off: businesses are added by the operator (python -m bikiyak.admin add-merchant ...).
 OPEN_SIGNUP = os.environ.get("BIKIYAK_OPEN_SIGNUP", "0") == "1"
 

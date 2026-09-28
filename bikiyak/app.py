@@ -26,7 +26,7 @@ def build_router() -> Router:
 
 def main() -> None:
     migrate()
-    if config.DEMO_MODE:
+    if config.DEMO_MODE or config.DEMO_PLACES:
         demo.seed_demo()
     server = ThreadingHTTPServer((config.HOST, config.PORT), make_handler(build_router()))
     print(f"bikıyak: http://{config.HOST}:{config.PORT}", flush=True)

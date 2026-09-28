@@ -220,6 +220,18 @@ class ProfileAndMapTest(ServerTest):
         self.assertEqual((api.status, api.headers.get_content_type()), (404, "application/json"))
         self.assertEqual(self.call(browser, "/api/card/999", expected=404)["error"], "Kart bulunamadı.")
 
+    def test_showcase_places_are_labelled_and_do_not_open_the_demo_login(self):
+        demo.seed_demo()
+        self.open_business(self.client(), "real", "Gerçek Kafe")
+        config.DEMO_PLACES = True
+        browser = self.client()
+        places = self.call(browser, "/api/places")["places"]
+        shown = sorted((p["business_name"], p["demo"]) for p in places)
+        self.assertEqual(shown.pop(0), ("Gerçek Kafe", False))
+        self.assertEqual(shown, [("Köşe Fırın", True), ("Nergis Çiçekçilik", True), ("Nora Café", True),
+                                 ("Usta Berber", True)])
+        self.call(browser, "/api/demo/login", {}, 404)
+
     def test_static_files_and_security_headers(self):
         browser = self.client()
         for path in ("/", "/js/main.js", "/styles.css", "/vendor/qrcode.min.js", "/vendor/maplibre/maplibre-gl.mjs",

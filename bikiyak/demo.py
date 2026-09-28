@@ -52,6 +52,8 @@ DEMO_PLACES = (
          "Seyhan / Adana", 36.99142, 35.33083),
     )
 )
+# Four neighbouring Istanbul places shown on the live map when BIKIYAK_DEMO_PLACES=1.
+SHOWCASE = ("nora-cafe-demo", "kose-firin-demo", "usta-berber-demo", "nergis-cicek-demo")
 DEMO_CUSTOMERS = (("Elif Kaya", 3, 3, 0), ("Mert Aydın", 6, 1, 1), ("Zeynep Tunç", 1, 1, 0))
 # Nora Café shows that one business can run several cards.
 EXTRA_CARDS = {"nora-cafe-demo": (({"reward_type": "percent", "reward_item": "", "reward_amount": 20, "custom": ""}, 8),)}
