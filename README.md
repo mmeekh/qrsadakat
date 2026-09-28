@@ -297,8 +297,12 @@ yerli ticaret altyapısı.
 
 - Ekrandaki güncel QR'ın fotoğrafı ~90 saniye içinde paylaşılırsa başkası da damga
   alabilir (aynı karta saatte bir damga sınırı var); fiziksel alışveriş doğrulaması yok.
-- Harita: MapLibre GL (yerel, `static/vendor/maplibre`) + OpenFreeMap "positron" vektör altlığı
-  (ücretsiz, anahtarsız, ticari kullanım serbest). Atıf zorunlu, "ⓘ" içinde duruyor. CSP'de
+- Harita: MapLibre GL (yerel, `static/vendor/maplibre`) + OpenFreeMap vektör altlığı
+  (ücretsiz, anahtarsız, ticari kullanım serbest). Tema "Minimal gri + sarı yollar":
+  `static/map-style.json`, OpenFreeMap "positron" stilinin `deploy/build_map_style.py` ile
+  yeniden renklendirilmiş hâli (yalnız ana cadde/otoyol sarı, yer adları Türkçe). Stili
+  değiştirmek için betiği düzenleyip `python3 deploy/build_map_style.py` çalıştır.
+  Atıf zorunlu, "ⓘ" içinde duruyor. CSP'de
   `connect-src https://tiles.openfreemap.org` var; işçi aynı kökten modül olarak yüklenir (blob yok).
 - Adres araması Nominatim'e saniyede en çok bir istek atar (yalnız girişli kullanıcı).
 - Demo modu açıkken demo yerleri haritada görünür; lansmanda `BIKIYAK_DEMO_MODE=0`.

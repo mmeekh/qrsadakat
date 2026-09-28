@@ -21,7 +21,7 @@ CSP = ("default-src 'self'; script-src 'self'; style-src 'self'; "
        "connect-src 'self' https://tiles.openfreemap.org; "
        "base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 MIME = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
-        ".mjs": "text/javascript; charset=utf-8",
+        ".mjs": "text/javascript; charset=utf-8", ".json": "application/json",
         ".css": "text/css; charset=utf-8", ".webp": "image/webp", ".svg": "image/svg+xml",
         ".png": "image/png", ".jpg": "image/jpeg", ".woff2": "font/woff2", ".webmanifest": "application/manifest+json"}
 

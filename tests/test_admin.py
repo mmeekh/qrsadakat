@@ -75,3 +75,9 @@ class PrivacyPageTest(ServerTest):
         self.assertIn("iletisim@xn--bikyak-r9a.com", body)
         self.assertNotIn("[[", body)
         self.assertIn('href="/gizlilik"', self.open(browser, "/").read().decode())
+
+    def test_map_style_is_served_as_json(self):
+        page = self.open(self.client(), "/map-style.json")
+        self.assertEqual(page.status, 200)
+        self.assertTrue(page.headers["Content-Type"].startswith("application/json"))
+        self.assertIn("openfreemap", page.read().decode())

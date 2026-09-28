@@ -2,9 +2,10 @@
 // when a map is first shown. Views work in [lat, lng]; MapLibre wants [lng, lat], converted here.
 import { themeFor } from "./qr-themes.js";
 
-// Light, low-noise basemap so the category pins carry the colour. Other OpenFreeMap styles:
-// liberty, bright, dark. The attribution (OpenFreeMap, OpenMapTiles, OpenStreetMap) is required.
-const STYLE = "https://tiles.openfreemap.org/styles/positron";
+// bikıyak's "minimal grey + yellow roads" theme: OpenFreeMap Positron recoloured by
+// deploy/build_map_style.py. Tiles, glyphs and sprites still come from OpenFreeMap; the
+// attribution (OpenFreeMap, OpenMapTiles, OpenStreetMap) is required.
+const STYLE = "/map-style.json";
 // Without the visitor's location the map opens at city scale on Istanbul, not the whole country.
 export const DEFAULT_VIEW = { center: [41.0082, 28.9784], zoom: 11 };
 const LOCATE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/>' +
