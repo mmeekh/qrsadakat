@@ -181,8 +181,8 @@ kullanıcılara ve ikinci girişte gitmez). Başka otomatik mail yok. Gönderen
 `/root/secrets/bikiyak-resend.env`, yalnız gönderim yetkili). `sent_mails` (göç 006) kullanıcı ve
 tür başına tek satır tutar; başarısızlık orada görünür, otomatik yeniden deneme yok.
 
-**Kapalı başlar:** metin ve görsel onaylanınca compose'a `BIKIYAK_WELCOME_MAIL: "1"` eklenir, aynı
-anda gizlilik sayfasının aktarımlar bölümüne Resend yazılır. Üst görsel `static/brand/mail-banner.jpg`
+**28 Eyl 2026'dan beri açık** (kullanıcı onayı): compose'da `BIKIYAK_WELCOME_MAIL: "1"`, gizlilik
+sayfasında Resend aktarımlarda yazılı. Kapatmak için bayrağı kaldırıp kabı yenile. Üst görsel `static/brand/mail-banner.jpg`
 (1120×448); dosya yoksa mavi bant ve bilet logosu çıkar, kırık resim olmaz.
 ```bash
 docker exec qrsadakat-app python -m bikiyak.admin welcome-preview > onizleme.html

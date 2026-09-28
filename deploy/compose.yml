@@ -9,6 +9,8 @@ services:
     environment:
       BIKIYAK_DEMO_MODE: "0"
       BIKIYAK_PUBLIC_URL: "https://xn--bikyak-r9a.com"
+      # Welcome e-mail to new customers, approved by the owner on 28 Sep 2026.
+      BIKIYAK_WELCOME_MAIL: "1"
     # GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET; without it Google sign-in stays off (demo still works).
     env_file:
       - path: /root/secrets/qrsadakat-google.env
