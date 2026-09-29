@@ -31,7 +31,10 @@ defineView("map", {
       return marker;
     });
     moveTo(map, here || DEFAULT_VIEW.center, here ? 15 : DEFAULT_VIEW.zoom, false);
-    setTimeout(() => map.resize(), 0);
+    requestAnimationFrame(() => {
+      map.resize();
+      setTimeout(() => map.resize(), 150);
+    });
     renderList();
   },
 });

@@ -82,6 +82,45 @@ function setupInteractions() {
 
   const btnFooterMap = $("footer-btn-map");
   if (btnFooterMap) btnFooterMap.onclick = () => go("map");
+
+  // Wire horizontal sliders (Value cards & Showcase cards)
+  function wireSlider(sliderId, dotsId) {
+    const slider = $(sliderId);
+    const dotsWrap = $(dotsId);
+    if (!slider || !dotsWrap) return;
+    const dots = dotsWrap.querySelectorAll(".s-dot");
+    const cards = slider.children;
+
+    dots.forEach((dot, idx) => {
+      dot.onclick = () => {
+        if (cards[idx]) {
+          cards[idx].scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+        }
+      };
+    });
+
+    let timeout;
+    slider.addEventListener("scroll", () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        const scrollLeft = slider.scrollLeft;
+        let activeIdx = 0;
+        let minDiff = Infinity;
+        Array.from(cards).forEach((card, idx) => {
+          const diff = Math.abs(card.offsetLeft - slider.offsetLeft - scrollLeft);
+          if (diff < minDiff) {
+            minDiff = diff;
+            activeIdx = idx;
+          }
+        });
+        dots.forEach((d, i) => d.classList.toggle("active", i === activeIdx));
+      }, 50);
+    }, { passive: true });
+  }
+
+  wireSlider("value-slider", "value-dots");
+  wireSlider("showcase-slider", "showcase-dots");
+
 }
 
 let initialized = false;

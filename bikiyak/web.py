@@ -19,6 +19,7 @@ from . import config, db as database, media
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self'; "
        "img-src 'self' data: blob: https://*.googleusercontent.com; "
        "connect-src 'self' https://tiles.openfreemap.org; "
+       "worker-src 'self' blob:; child-src 'self' blob:; "
        "base-uri 'none'; form-action 'self'; frame-ancestors 'none'")
 MIME = {".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8",
         ".mjs": "text/javascript; charset=utf-8", ".json": "application/json",

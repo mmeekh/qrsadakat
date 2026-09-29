@@ -114,9 +114,9 @@ export function locate() {
     navigator.geolocation.getCurrentPosition(
       (position) => resolve([position.coords.latitude, position.coords.longitude]),
       (error) => reject(new Error(error.code === error.PERMISSION_DENIED
-        ? "Konum izni verilmedi. Tarayıcı ayarlarından bikıyak.com için Konum'u İzin Ver yapıp tekrar dene."
+        ? "Konum izni verilmedi. Tarayıcı ayarlarından Konum'a izin verip tekrar dene."
         : "Konumun şu an alınamadı. Bağlantını kontrol edip tekrar dene.")),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 180000 },
     );
   });
 }
