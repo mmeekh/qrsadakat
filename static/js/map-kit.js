@@ -113,7 +113,9 @@ export function locate() {
     if (!navigator.geolocation) return reject(new Error("Tarayıcın konum paylaşmayı desteklemiyor."));
     navigator.geolocation.getCurrentPosition(
       (position) => resolve([position.coords.latitude, position.coords.longitude]),
-      () => reject(new Error("Konum izni verilmedi.")),
+      (error) => reject(new Error(error.code === error.PERMISSION_DENIED
+        ? "Konum izni verilmedi. Tarayıcı ayarlarından bikıyak.com için Konum'u İzin Ver yapıp tekrar dene."
+        : "Konumun şu an alınamadı. Bağlantını kontrol edip tekrar dene.")),
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
     );
   });

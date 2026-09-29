@@ -19,6 +19,8 @@ $("brand-home").addEventListener("click", (event) => {
   go("home");
 });
 $("top-account").addEventListener("click", () => go("account"));
+const topLogin = $("top-login");
+if (topLogin) topLogin.addEventListener("click", () => go("account"));
 
 (async () => {
   const params = new URLSearchParams(location.search);

@@ -12,7 +12,6 @@ let markers = [];
 let places = [];
 let here = null;
 let hereMarker = null;
-let askedForLocation = false;
 
 defineView("map", {
   async render() {
@@ -34,11 +33,6 @@ defineView("map", {
     moveTo(map, here || DEFAULT_VIEW.center, here ? 15 : DEFAULT_VIEW.zoom, false);
     setTimeout(() => map.resize(), 0);
     renderList();
-    // First visit: ask once for the location so the map opens around the visitor.
-    if (!here && !askedForLocation) {
-      askedForLocation = true;
-      findMe(false);
-    }
   },
 });
 

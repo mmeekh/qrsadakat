@@ -38,45 +38,489 @@
 <body>
   <div class="shell">
     <header class="topbar">
-      <a id="brand-home" href="/" class="brand" aria-label="bikıyak ana sayfa">
-        <svg viewBox="0 0 176 56" role="img" aria-hidden="true">
-          <path d="M10 2H166A8 8 0 0 1 174 10V21A7 7 0 0 0 174 35V46A8 8 0 0 1 166 54H10A8 8 0 0 1 2 46V35A7 7 0 0 0 2 21V10A8 8 0 0 1 10 2Z" fill="#FFC933"/>
-          <line x1="133" y1="10" x2="133" y2="46" stroke="#0B1433" stroke-opacity=".3" stroke-width="2" stroke-dasharray="3 4"/>
-          <text x="15" y="36.5" font-family="Sora, sans-serif" font-weight="800" font-size="22" letter-spacing="-.6" fill="#0B1433">bikıyak</text>
-          <path d="M144 30q10 9 20 0" stroke="#0B1433" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-        </svg>
-      </a>
-      <button id="top-account" class="avatar-button hidden" type="button" aria-label="Hesabım"></button>
+      <div class="topbar-brand-wrap">
+        <a id="brand-home" href="/" class="brand" aria-label="bikıyak ana sayfa">
+          <svg viewBox="0 0 176 56" role="img" aria-hidden="true">
+            <path d="M10 2H166A8 8 0 0 1 174 10V21A7 7 0 0 0 174 35V46A8 8 0 0 1 166 54H10A8 8 0 0 1 2 46V35A7 7 0 0 0 2 21V10A8 8 0 0 1 10 2Z" fill="#FFC933"/>
+            <line x1="133" y1="10" x2="133" y2="46" stroke="#0B1433" stroke-opacity=".3" stroke-width="2" stroke-dasharray="3 4"/>
+            <text x="15" y="36.5" font-family="Sora, sans-serif" font-weight="800" font-size="22" letter-spacing="-.6" fill="#0B1433">bikıyak</text>
+            <path d="M144 30q10 9 20 0" stroke="#0B1433" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+          </svg>
+        </a>
+        <nav class="topbar-nav" aria-label="Sayfa bölümleri">
+          <a href="#nasil-calisir" class="topbar-nav-link">Nasıl Çalışır?</a>
+          <a href="#isletmeler-icin" class="topbar-nav-link">İşletmeler İçin</a>
+          <a href="#karsilastirma" class="topbar-nav-link">Neden bikıyak?</a>
+          <a href="#fiyatlar" class="topbar-nav-link">Fiyatlar</a>
+          <button id="nav-btn-map" class="topbar-nav-link text-btn" type="button">Harita</button>
+        </nav>
+      </div>
+      <div class="topbar-actions">
+        <button id="nav-btn-merchant" class="button-merchant-pill btn-open-merchant" type="button">
+          <span>İşletmeni Ekle</span>
+          <span class="badge-free">2 Ay Ücretsiz</span>
+        </button>
+        <button id="top-login" class="topbar-login-link text-btn" type="button">Giriş</button>
+        <button id="top-account" class="avatar-button hidden" type="button" aria-label="Hesabım"></button>
+      </div>
     </header>
 
     <main>
       <section id="home-view" class="view hidden">
+        <!-- 1. HERO SECTION -->
         <div class="hero">
           <div class="hero-copy">
-            <span class="eyebrow">Mahallenin dijital sadakat kartı</span>
-            <h1>Her ziyarette <mark>bi kıyak.</mark></h1>
-            <p>Mahallendeki kafe, fırın ve berberlerde kasadaki QR'ı okut, damgan anında kartına işlensin. Kart dolunca ödülün hazır. Uygulama indirmek yok, kart kaybetmek yok.</p>
-            <div id="home-actions" class="hero-actions"></div>
-            <p class="footnote">İşletme misin? <a href="mailto:iletisim@xn--bikyak-r9a.com">iletisim@bikıyak.com</a> · <a href="/gizlilik">Gizlilik ve KVKK</a></p>
+            <div class="hero-badges">
+              <span class="hero-chip">Kafeler · Fırınlar · Berberler · Mahalle İşletmeleri</span>
+            </div>
+            <h1>Her ziyarette müşterini <mark>geri getir.</mark></h1>
+            <p class="hero-lead"><b>Uygulama yok. Plastik kart yok. Müşteri kaybetmek yok.</b> Mahallenin dijital sadakat kartıyla müşteriler kasada QR okutur, anında damgasını alır ve müdavimin olur.</p>
+
+            <!-- 5-Second Flow Ribbon -->
+            <div class="hero-flow-ribbon" aria-label="Sistem işleyişi">
+              <div class="flow-pill"><span>📱</span><b>QR Okut</b></div>
+              <span class="flow-arrow" aria-hidden="true">→</span>
+              <div class="flow-pill"><span>⭐</span><b>Damga Al</b></div>
+              <span class="flow-arrow" aria-hidden="true">→</span>
+              <div class="flow-pill"><span>🎁</span><b>Ödülü Kazan</b></div>
+              <span class="flow-arrow" aria-hidden="true">→</span>
+              <div class="flow-pill"><span>❤️</span><b>Tekrar Gel</b></div>
+            </div>
+
+            <!-- Main CTAs -->
+            <div class="hero-cta-group">
+              <button id="btn-hero-merchant" class="button primary hero-btn-merchant btn-open-merchant" type="button">
+                <span>İşletmeni Ekle</span>
+                <span class="hero-btn-tag">İlk 2 Ay Ücretsiz</span>
+              </button>
+              <button id="btn-hero-explore" class="button outline hero-btn-explore" type="button">
+                <span>📍 Yakınımdaki İşletmeleri Gör</span>
+              </button>
+            </div>
+
+            <!-- Customer Dynamic Login Slot -->
+            <div class="hero-customer-slot">
+              <p class="hero-customer-hint">Müşteri misin? Kartlarına ve damgalarına anında ulaş:</p>
+              <div id="home-actions" class="hero-actions"></div>
+            </div>
+
+            <div class="hero-trust-band">
+              <span>✓ Kredi kartı gerekmez</span>
+              <span>✓ 2 dakikada hazır</span>
+              <span>✓ Sıfır donanım maliyeti</span>
+            </div>
           </div>
+
           <div class="pass-stack" aria-hidden="true">
-            <div class="pass pass-market"><div class="pass-head"><strong>Bereket Bakkal</strong><span class="chip">Market</span></div></div>
-            <div class="pass pass-firin"><div class="pass-head"><strong>Köşe Fırın</strong><span class="chip">Fırın</span></div></div>
-            <div class="pass pass-kafe"><div class="pass-head"><strong>Nora Café</strong><span class="chip">Kafe</span></div>
+            <div class="pass pass-market">
+              <div class="pass-head"><strong>Bereket Bakkal</strong><span class="chip">Market</span></div>
+            </div>
+            <div class="pass pass-firin">
+              <div class="pass-head"><strong>Köşe Fırın</strong><span class="chip">Fırın</span></div>
+            </div>
+            <div class="pass pass-kafe">
+              <div class="pass-head"><strong>Nora Café</strong><span class="chip">Kafe</span></div>
               <p>5 damga topla, 1 kahve bedava</p>
-              <div class="card-stamps"><span class="stamp filled">✓</span><span class="stamp filled">✓</span><span class="stamp filled">✓</span><span class="stamp"></span><span class="stamp gift">✦</span></div>
-              <div class="progress-row"><span>3 / 5 damga</span><span>bikıyak</span></div></div>
+              <div class="card-stamps">
+                <span class="stamp filled">✓</span>
+                <span class="stamp filled">✓</span>
+                <span class="stamp filled">✓</span>
+                <span class="stamp"></span>
+                <span class="stamp gift">✦</span>
+              </div>
+              <div class="progress-row"><span>3 / 5 damga</span><span>bikıyak</span></div>
+            </div>
           </div>
         </div>
-        <ol class="steps">
-          <li><h3>Kasadaki QR'ı okut</h3><p>Anlaşmalı işletmede telefonunun kamerasıyla. Uygulama indirmen gerekmez.</p></li>
-          <li><h3>Damgan anında işlensin</h3><p>İlk damga için giriş bile gerekmez. Google ile kaydedince kartın kaybolmaz.</p></li>
-          <li><h3>Ödülünü al</h3><p>Hedef dolunca kartından "Ödülümü kullan"a dokun, kasada göster.</p></li>
-        </ol>
+
+        <!-- 2. NASIL ÇALIŞIR? (4 GÖRSEL ADIM) -->
+        <section id="nasil-calisir" class="home-section">
+          <div class="section-header">
+            <span class="eyebrow">Nasıl Çalışıyor?</span>
+            <h2>Saniyeler içinde damga, ilk günden sadık müşteri.</h2>
+            <p>Müşteriye hiçbir şey indirtmeden, kasada zaman kaybetmeden 4 net adımda ilerleyin.</p>
+          </div>
+          <div class="how-grid">
+            <div class="how-card">
+              <div class="how-icon">📱</div>
+              <div class="how-num">01</div>
+              <h3>Kasadaki QR'ı okut</h3>
+              <p>Müşteriniz telefonunun kamerasıyla kasadaki dinamik QR kodu okutur. Uygulama indirmek veya şifre hatırlamak gerekmez.</p>
+            </div>
+            <div class="how-card">
+              <div class="how-icon">⭐</div>
+              <div class="how-num">02</div>
+              <h3>Damganı anında al</h3>
+              <p>Ziyaret anında dijital karta işlenir. İlk damga için giriş bile gerekmez; müşteri kartını anında cebinde görür.</p>
+            </div>
+            <div class="how-card">
+              <div class="how-icon">🎁</div>
+              <div class="how-num">03</div>
+              <h3>Ödülünü kazan</h3>
+              <p>Hedef damga dolunca ödül hazır ("5 kahveye 1 kahve" veya "%20 indirim"). Müşteri kasada tek dokunuşla kullanır.</p>
+            </div>
+            <div class="how-card">
+              <div class="how-icon">❤️</div>
+              <div class="how-num">04</div>
+              <h3>Müşterin tekrar gelsin</h3>
+              <p>Cüzdanda unutulan kağıt kartların aksine, dijital kart müşteriye işletmenizi hatırlatır ve müdavimlik bağını güçlendirir.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. İŞLETME VİTRİNİ: İŞLETME İÇİN NE YAPAR? -->
+        <section id="isletmeler-icin" class="home-section bg-card">
+          <div class="section-header">
+            <span class="eyebrow">İşletmeniz İçin Ne Yapar?</span>
+            <h2>Özellik değil, işletmenize doğrudan ciro ve müşteri kazandırır.</h2>
+            <p>bikıyak, küçük ve orta ölçekli işletmelerin büyük zincirler gibi profesyonel sadakat altyapısı kurmasını sağlar.</p>
+          </div>
+          <div class="value-grid">
+            <div class="value-card">
+              <div class="value-icon-box">🔄</div>
+              <h3>Tekrar ziyareti artırır</h3>
+              <p>Müşterinin rakip yerine tekrar sizin kapınızdan girmesi için otomatik ve güçlü bir sebep oluşturur (%61'e varan tekrar ziyaret oranı).</p>
+            </div>
+            <div class="value-card">
+              <div class="value-icon-box">⚡</div>
+              <h3>Müşteriye uygulama indirtmez</h3>
+              <p>Kimse bir kahve veya ekmek için App Store'a girip 100 MB uygulama indirmez. bikıyak web tabanlıdır; kamera açılır, 3 saniyede biter.</p>
+            </div>
+            <div class="value-card">
+              <div class="value-icon-box">💳</div>
+              <h3>Kağıt kart çöpünü ve masrafını bitirir</h3>
+              <p>Kağıt kartlar çantada kaybolur, yıpranır, damga mürekkebi dağılır. Dijital sadakat kartı her zaman müşterinin telefonundadır.</p>
+            </div>
+            <div class="value-card">
+              <div class="value-icon-box">📊</div>
+              <h3>Müşteri davranışını gösterir</h3>
+              <p>Kaç tekil müşteri geldi? Kaç tanesi geri döndü? En çok hangi saatte damga alındı? Hepsini canlı işletme panelinizden izleyin.</p>
+            </div>
+            <div class="value-card">
+              <div class="value-icon-box">🎯</div>
+              <h3>Kendi kampanyanızı yönetin</h3>
+              <p>"5 kahve al 1 kahve bizden", "6. fırın ürünü ikram", "%20 indirim" gibi işletmenize en uygun modeli dakikalar içinde kurun.</p>
+            </div>
+            <div class="value-card">
+              <div class="value-icon-box">🖨️</div>
+              <h3>Kasaya hazır QR baskı kiti</h3>
+              <p>Kasaya koymak için A4 şablon, masa kartlığı ve sticker tasarımları panelinizden anında hazır. Çıktı alın ve hemen kullanmaya başlayın.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. KARŞILAŞTIRMA: ESKİ YÖNTEM VS BIKIYAK -->
+        <section id="karsilastirma" class="home-section">
+          <div class="section-header">
+            <span class="eyebrow">Karşılaştırma</span>
+            <h2>Eski kağıt kartları rafa kaldırın.</h2>
+            <p>Geleneksel damga kartlarıyla modern dijital sadakat sistemi arasındaki fark.</p>
+          </div>
+          <div class="compare-container">
+            <div class="compare-card old-way">
+              <div class="compare-head">
+                <span class="compare-badge old">Geleneksel Yöntem</span>
+                <h3>Kağıt & Plastik Kartlar</h3>
+              </div>
+              <ul class="compare-list">
+                <li><span class="bullet-cross">✕</span> Müşteri kartı evde unutur, cüzdanında kaybeder</li>
+                <li><span class="bullet-cross">✕</span> Damga silinir, sahte damga basılabilir</li>
+                <li><span class="bullet-cross">✕</span> Kimin ne zaman geldiğini asla bilemezsiniz</li>
+                <li><span class="bullet-cross">✕</span> Kampanya sonuçlarını ve geri dönüşü ölçemezsiniz</li>
+                <li><span class="bullet-cross">✕</span> Sürekli matbaa, kart basımı ve kaşe maliyeti</li>
+              </ul>
+            </div>
+            <div class="compare-card new-way">
+              <div class="compare-head">
+                <span class="compare-badge new">Modern Çözüm</span>
+                <h3>bikıyak Dijital Sadakat</h3>
+              </div>
+              <ul class="compare-list">
+                <li><span class="bullet-check">✓</span> Her zaman müşterinin telefonunda, anında hazır</li>
+                <li><span class="bullet-check">✓</span> Dakikada yenilenen dinamik QR ile %100 güvenli</li>
+                <li><span class="bullet-check">✓</span> Tekrar ziyaret oranı, müşteri ve damga verisi elinizin altında</li>
+                <li><span class="bullet-check">✓</span> Otomatik ödül teslimi ve anlık işletme paneli</li>
+                <li><span class="bullet-check">✓</span> Sıfır matbaa masrafı, sıfır kağıt israfı, anında kurulum</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. İŞLETME DASHBOARD METRİKLERİ VİTRİNİ -->
+        <section class="home-section bg-card">
+          <div class="section-header">
+            <span class="eyebrow">İşletme Kontrol Paneli</span>
+            <h2>Müşteri sayısına değil, <mark>geri dönüş oranına</mark> odaklanın.</h2>
+            <p>Sadakat sisteminin asıl amacı yeni birini bir kez çekmek değil; gelen müşteriyi sadık müdavime dönüştürmektir.</p>
+          </div>
+          <div class="dashboard-mockup">
+            <div class="mockup-topbar">
+              <div class="mockup-dots"><span></span><span></span><span></span></div>
+              <span class="mockup-title">panel.bikıyak.com — Nora Café Kontrol Merkezi</span>
+              <span class="mockup-status">● Canlı Veri</span>
+            </div>
+            <div class="mockup-content">
+              <div class="mockup-metrics">
+                <div class="mockup-metric">
+                  <span class="m-label">Ziyaret Eden Müşteri</span>
+                  <strong class="m-val">124</strong>
+                  <span class="m-sub">Bu ay toplam tekil</span>
+                </div>
+                <div class="mockup-metric highlight">
+                  <span class="m-label">Tekrar Ziyaret Oranı</span>
+                  <strong class="m-val text-success">%61</strong>
+                  <span class="m-sub text-success">↑ 76 müdavim geri geldi</span>
+                </div>
+                <div class="mockup-metric">
+                  <span class="m-label">Toplam Damga</span>
+                  <strong class="m-val">342</strong>
+                  <span class="m-sub">Verilen dijital damga</span>
+                </div>
+                <div class="mockup-metric">
+                  <span class="m-label">Kullanılan Ödül</span>
+                  <strong class="m-val text-primary">18</strong>
+                  <span class="m-sub">Teslim edilen ikram</span>
+                </div>
+              </div>
+              <div class="mockup-bottom">
+                <div class="mockup-recent">
+                  <h4>Son Ziyaret Akışı</h4>
+                  <div class="mockup-row"><span>Ahmet K.</span><span class="chip-mini">4/5 damga</span><small>5 dk önce</small></div>
+                  <div class="mockup-row"><span>Zeynep M.</span><span class="chip-mini reward">🎁 Ödül hazır</span><small>18 dk önce</small></div>
+                  <div class="mockup-row"><span>Murat D.</span><span class="chip-mini">2/5 damga</span><small>42 dk önce</small></div>
+                </div>
+                <div class="mockup-qr-preview">
+                  <h4>Kasa QR Görünümü</h4>
+                  <div class="mockup-qr-box">
+                    <div class="mockup-qr-inner">
+                      <span class="qr-sample-box">QR KODU</span>
+                      <small>Kasadaki QR kod her 60 saniyede bir otomatik yenilenir</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6. MAHALLE ÖRNEKLERİ / AVANTAJLAR AĞI -->
+        <section class="home-section">
+          <div class="section-header">
+            <span class="eyebrow">Mahallendeki Avantajlar Ağı</span>
+            <h2>Farklı sektörler, tek bir dijital cüzdanda.</h2>
+            <p>Müşteriler mahalledeki tüm anlaşmalı yerlerin kartlarını tek ekranda taşır.</p>
+          </div>
+          <div class="showcase-grid">
+            <div class="showcase-card">
+              <div class="showcase-badge cat-kafe">☕ Kafe</div>
+              <h3>Nora Café</h3>
+              <p class="showcase-reward">5 kahve topla → 1 kahve hediye</p>
+              <div class="showcase-stamps"><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span class="gift">🎁</span></div>
+              <span class="showcase-loc">📍 Moda, Kadıköy</span>
+            </div>
+            <div class="showcase-card">
+              <div class="showcase-badge cat-firin">🥐 Fırın & Pastane</div>
+              <h3>Köşe Fırın</h3>
+              <p class="showcase-reward">6 fırın ürününe 1 tatlı ikramı</p>
+              <div class="showcase-stamps"><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span class="gift">🎁</span></div>
+              <span class="showcase-loc">📍 Cihangir, Beyoğlu</span>
+            </div>
+            <div class="showcase-card">
+              <div class="showcase-badge cat-berber">💈 Berber & Kuaför</div>
+              <h3>Makas Kuaför</h3>
+              <p class="showcase-reward">4 saç kesimine 5. bakım bizden</p>
+              <div class="showcase-stamps"><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span class="gift">🎁</span></div>
+              <span class="showcase-loc">📍 Beşiktaş Çarşı</span>
+            </div>
+            <div class="showcase-card">
+              <div class="showcase-badge cat-restoran">🍕 Restoran</div>
+              <h3>Pera Bistro</h3>
+              <p class="showcase-reward">5 ana yemeğe %20 müdavim indirimi</p>
+              <div class="showcase-stamps"><span>✓</span><span>✓</span><span>✓</span><span>✓</span><span class="gift">🎁</span></div>
+              <span class="showcase-loc">📍 Alsancak, İzmir</span>
+            </div>
+          </div>
+          <div class="showcase-action">
+            <button id="btn-showcase-map" class="button primary" type="button">
+              <span>Tüm İşletmeleri Haritada Gör</span> <span>→</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- 7. ŞEFFAF FİYATLANDIRMA -->
+        <section id="fiyatlar" class="home-section bg-card">
+          <div class="section-header">
+            <span class="eyebrow">Fiyatlandırma</span>
+            <h2>İlk 2 ay tamamen ücretsiz. Gizli ücret yok, taahhüt yok.</h2>
+            <p>İşletmenizin sadakat sistemini sıfır riskle test edin; memnun kalırsanız devam edin.</p>
+          </div>
+          <div class="pricing-container">
+            <!-- Paket 1: Başlangıç -->
+            <div class="price-card">
+              <div class="price-head">
+                <span class="price-tier">Başlangıç</span>
+                <div class="price-val">0 ₺ <small>/ ilk 2 ay</small></div>
+                <p>Küçük işletmeler ve ilk kez denemek isteyenler için.</p>
+              </div>
+              <ul class="price-features">
+                <li><span>✓</span> 1 aktif dijital sadakat kartı</li>
+                <li><span>✓</span> Saniyede okunan dinamik kasa QR'ı</li>
+                <li><span>✓</span> Temel müşteri ve damga takip paneli</li>
+                <li><span>✓</span> Uygulama indirtmeyen web arayüzü</li>
+                <li><span>✓</span> E-posta ile teknik destek</li>
+              </ul>
+              <button class="button outline full btn-open-merchant" type="button">Ücretsiz Başla</button>
+            </div>
+
+            <!-- Paket 2: İşletme (Popular) -->
+            <div class="price-card popular">
+              <div class="popular-ribbon">En Çok Seçilen</div>
+              <div class="price-head">
+                <span class="price-tier">İşletme</span>
+                <div class="price-val">149 ₺ <small>/ ay</small></div>
+                <p>Aktif müşteri sirkülasyonu olan kafeler, fırınlar ve berberler için.</p>
+              </div>
+              <ul class="price-features">
+                <li><span>✓</span> <b>İlk 2 ay 0 ₺ deneme</b></li>
+                <li><span>✓</span> Sınırsız müşteri ve damga sayısı</li>
+                <li><span>✓</span> 5 adede kadar farklı kart programı</li>
+                <li><span>✓</span> Detaylı müdavim analitiği (% Tekrar ziyaret)</li>
+                <li><span>✓</span> Kasaya hazır A4 & masa kartı QR baskı kiti</li>
+                <li><span>✓</span> Doğrulanmış işletme rozeti</li>
+              </ul>
+              <button class="button primary full btn-open-merchant" type="button">2 Ay Ücretsiz Dene →</button>
+            </div>
+
+            <!-- Paket 3: Pro -->
+            <div class="price-card">
+              <div class="price-head">
+                <span class="price-tier">Pro / Zincir</span>
+                <div class="price-val">299 ₺ <small>/ ay</small></div>
+                <p>Birden fazla şubesi olan veya gelişmiş CRM isteyen işletmeler için.</p>
+              </div>
+              <ul class="price-features">
+                <li><span>✓</span> Çoklu şube ve personel yönetimi</li>
+                <li><span>✓</span> Müşteri segmentasyonu (müdavimler, uyuyanlar)</li>
+                <li><span>✓</span> Özel saat/gün kampanya kurguları (2x damga)</li>
+                <li><span>✓</span> Özel alan adı & marka renkleri</li>
+                <li><span>✓</span> Öncelikli WhatsApp & telefon desteği</li>
+              </ul>
+              <button class="button outline full btn-open-merchant" type="button">İletişime Geç</button>
+            </div>
+          </div>
+          <p class="pricing-guarantee">🛡️ <b>Taahhüt veya cayma bedeli yoktur:</b> İstediğiniz an tek tıkla iptal edebilirsiniz.</p>
+        </section>
+
+        <!-- 8. GÜVEN & TEKNOLOJİ -->
+        <section class="home-section">
+          <div class="section-header">
+            <span class="eyebrow">Güvenlik ve Standartlar</span>
+            <h2>Sahte damgaya ve suiistimale geçit yok.</h2>
+            <p>İşletmenizin hakkını korumak için tasarlanmış kurumsal güvenlik standartları.</p>
+          </div>
+          <div class="trust-grid">
+            <div class="trust-card">
+              <div class="trust-icon">⏱️</div>
+              <h3>Dinamik Kasa QR'ı</h3>
+              <p>Kasadaki QR kod her 60 saniyede bir kriptografik olarak yenilenir. Fotoğrafı çekilip dışarıdan damga alınamaz.</p>
+            </div>
+            <div class="trust-card">
+              <div class="trust-icon">🛡️</div>
+              <h3>Sahte Damga & Hız Koruması</h3>
+              <p>Aynı cihazdan peş peşe yapılan şüpheli istekler otomatik engellenir; işletmeye anlık fraud alarmı iletilir.</p>
+            </div>
+            <div class="trust-card">
+              <div class="trust-icon">⚖️</div>
+              <h3>KVKK ve Veri Gizliliği</h3>
+              <p>Müşterilerinizin ve işletmenizin verileri Türkiye mevzuatına ve KVKK standartlarına tam uyumlu şekilde korunur.</p>
+            </div>
+            <div class="trust-card">
+              <div class="trust-icon">⚡</div>
+              <h3>Sıfır Donanım Maliyeti</h3>
+              <p>Pahalı POS cihazı veya tablet almanıza gerek yoktur. Mevcut herhangi bir telefon veya tablet ekranı yeterlidir.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 9. SSS / FAQ -->
+        <section class="home-section bg-card">
+          <div class="section-header">
+            <span class="eyebrow">Merak Edilenler</span>
+            <h2>Sıkça Sorulan Sorular</h2>
+          </div>
+          <div class="faq-list">
+            <details class="faq-item">
+              <summary>Müşterilerimin herhangi bir uygulama indirmesi gerekiyor mu?</summary>
+              <p>Kesinlikle hayır. Müşteriniz sadece telefonunun normal kamerasını kasadaki QR koda tutar. Tarayıcıda anında kartı açılır ve damgası işlenir.</p>
+            </details>
+            <details class="faq-item">
+              <summary>İşletmem için özel bir POS cihazı veya donanım almam gerekir mi?</summary>
+              <p>Hayır. Kasada duran herhangi bir akıllı telefon, tablet ya da bilgisayar ekranında QR kodunuzu açık tutmanız yeterlidir. Dilerseniz sistemden tek tıkla QR kodunuzun çıktısını alıp kasaya asabilirsiniz.</p>
+            </details>
+            <details class="faq-item">
+              <summary>Kampanya kurallarını ve ödülleri kendim belirleyebilir miyim?</summary>
+              <p>Evet. Kaç damgaya ödül verileceğini (2 ila 20 arası) ve ödülün ne olacağını (bedava ürün, yüzde indirim, tutar indirimi veya kendi özel metniniz) tamamen siz seçersiniz.</p>
+            </details>
+            <details class="faq-item">
+              <summary>İlk 2 aydan sonra herhangi bir bağlayıcılık var mı?</summary>
+              <p>Hayır, bikıyak'ta sözleşme, taahhüt veya cayma bedeli yoktur. İstediğiniz zaman panelinizden tek tıkla sistemden ayrılabilirsiniz.</p>
+            </details>
+          </div>
+        </section>
+
+        <!-- 10. FINAL CTA BANNER -->
+        <section class="home-cta-banner">
+          <div class="home-cta-box">
+            <span class="hero-chip">Mahalleni Dijitale Taşı</span>
+            <h2>Müşterilerini müdavim yapmaya bugün başla.</h2>
+            <p>2 dakikada kartını oluştur, kasana QR'ını koy ve ilk damgaları toplamaya başla. İlk 2 ay tamamen ücretsiz.</p>
+            <div class="home-cta-actions">
+              <button class="button primary large btn-open-merchant" type="button">
+                İşletmeni Ücretsiz Ekle <span>→</span>
+              </button>
+              <a href="mailto:iletisim@xn--bikyak-r9a.com" class="button outline large">
+                Bize Ulaşın
+              </a>
+            </div>
+            <small class="cta-micro">Sorularınız için: iletisim@bikıyak.com</small>
+          </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="home-footer">
+          <div class="footer-top">
+            <div class="footer-brand">
+              <strong>bikıyak</strong>
+              <p>Mahallenin dijital sadakat kartı platformu.</p>
+            </div>
+            <div class="footer-links">
+              <div>
+                <b>Ürün</b>
+                <a href="#nasil-calisir">Nasıl Çalışır?</a>
+                <a href="#isletmeler-icin">İşletmeler İçin</a>
+                <a href="#fiyatlar">Fiyatlar</a>
+              </div>
+              <div>
+                <b>Keşfet</b>
+                <button class="footer-text-btn" id="footer-btn-map" type="button">Harita & İşletmeler</button>
+                <button class="footer-text-btn btn-open-merchant" type="button">İşletmeni Ekle</button>
+              </div>
+              <div>
+                <b>Yasal</b>
+                <a href="/gizlilik">Gizlilik ve KVKK</a>
+                <a href="mailto:iletisim@xn--bikyak-r9a.com">İletişim & Destek</a>
+              </div>
+            </div>
+          </div>
+          <div class="footer-bottom">
+            <span>© 2026 bikıyak. Tüm hakları saklıdır.</span>
+            <span>Uygulama yok · Plastik kart yok · Müşteri kaybetmek yok</span>
+          </div>
+        </footer>
       </section>
 
       <section id="setup-view" class="view hidden">
-        <div class="page-head"><div><span class="eyebrow">İşletme</span><h1 id="setup-title">İşletmeni ekle</h1><p>Müşterilerin seni haritada bu bilgilerle görür.</p></div></div>
+        <div class="page-head"><div><span class="eyebrow">İşletme</span><h1 id="setup-title">İşletmeni ekle</h1><p>Müşterilerin seni haritada bu bilgilerle görür. İlk 2 ay kullanım ücretsiz.</p></div></div>
         <div id="setup-blocked" class="empty-block hidden"></div>
         <form id="setup-form" class="panel setup-form">
           <label>İşletme adı<input name="business_name" maxlength="80" required placeholder="Örn. Nora Café"></label>
@@ -188,5 +632,47 @@
       <span>Google ile devam et</span>
     </button>
   </template>
+  <!-- İŞLETME BAŞVURU MODALI -->
+  <div id="merchant-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <span class="eyebrow">İlk 2 Ay Ücretsiz</span>
+          <h2 id="modal-title">İşletmeni bikıyak'a Ekle</h2>
+        </div>
+        <button id="modal-close" class="modal-close" type="button" aria-label="Kapat">✕</button>
+      </div>
+      <p class="modal-sub">Bilgilerini ilet, dijital sadakat kartını 2 saat içinde aktif edelim.</p>
+      <form id="merchant-inquiry-form" class="modal-form">
+        <label>İşletme Adı<input name="m_name" required placeholder="Örn. Nora Café"></label>
+        <div class="form-row">
+          <label>Kategori
+            <select name="m_category" required>
+              <option value="Kafe">☕ Kafe</option>
+              <option value="Fırın & Pastane">🥐 Fırın & Pastane</option>
+              <option value="Berber & Kuaför">💈 Berber & Kuaför</option>
+              <option value="Restoran">🍕 Restoran</option>
+              <option value="Market">🛒 Market & Bakkal</option>
+              <option value="Diğer">✨ Diğer</option>
+            </select>
+          </label>
+          <label>Şehir / İlçe<input name="m_city" required placeholder="Örn. Kayseri, Melikgazi"></label>
+        </div>
+        <label>Yetkili Adı Soyadı<input name="m_owner" required placeholder="Örn. Ahmet Yılmaz"></label>
+        <div class="form-row">
+          <label>Telefon / WhatsApp<input name="m_phone" type="tel" required placeholder="05XX XXX XX XX"></label>
+          <label>E-posta<input name="m_email" type="email" required placeholder="isletme@gmail.com"></label>
+        </div>
+        <label>Düşündüğün Kampanya (İsteğe bağlı)<input name="m_reward" placeholder="Örn. 5 kahveye 1 kahve hediye"></label>
+        <button type="submit" class="button primary full">2 Ay Ücretsiz Başvur <span>→</span></button>
+      </form>
+      <div id="modal-success" class="modal-success hidden">
+        <div class="success-icon">✓</div>
+        <h3>Talebiniz Alındı!</h3>
+        <p>İşletme bilgileriniz ulaştı. 2 saat içinde sizinle iletişime geçip kasa QR'ınızı ve panelinizi aktif edeceğiz.</p>
+        <button id="modal-success-close" class="button secondary full" type="button">Tamam</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

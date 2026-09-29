@@ -44,6 +44,10 @@ export function renderTabs() {
       ? h("img", { src: state.me.user.picture, alt: "", referrerpolicy: "no-referrer" })
       : h("span", {}, state.me.user.name.slice(0, 1).toUpperCase()));
   }
+  const topLogin = $("top-login");
+  if (topLogin) {
+    topLogin.classList.toggle("hidden", !!state.me.user);
+  }
 }
 
 export function defineView(name, spec) {
@@ -59,6 +63,7 @@ export async function go(name, options = {}) {
   document.querySelectorAll("main > .view").forEach((section) => {
     section.classList.toggle("hidden", section.id !== `${name}-view`);
   });
+  document.body.dataset.view = name;
   history.replaceState({}, "", name === "home" ? "/" : `/?view=${name}`);
   renderTabs();
   window.scrollTo(0, 0);
